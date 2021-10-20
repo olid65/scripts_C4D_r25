@@ -32,7 +32,7 @@ def main():
         usdata.SetUnitScale(scale, unit)
         doc[c4d.DOCUMENT_DOCUNIT] = usdata
 
-    #mise en cm des option d'importation DXF
+    #mise en cm des options d'importation DXF
     plug = c4d.plugins.FindPlugin(1001035, c4d.PLUGINTYPE_SCENELOADER)
     if plug is None:
         print ("pas de module d'import 3DS")
