@@ -259,14 +259,16 @@ class DlgBbox(c4d.gui.GeDialog):
     CHECKBOX_ORTHO2M = 1503
     CHECKBOX_ORTHO10CM = 1504
 
+    BTON_GET_URLS_DOWNLOAD = 1600
+
+    ID_TXT_DOWNLOAD_STATUS = 1700
+
 
     LABEL_MNT2M = "MNT 2m"
     LABEL_MNT50CM = "MNT 50cm"
     LABEL_BATI3D = "Bâtiments 3D"
     LABEL_ORTHO2M = "Orthophoto 2m"
     LABEL_ORTHO10CM = "Orthophoto 10cm"
-
-    BTON_GET_URLS_DOWNLOAD = 1600
 
 
     TXT_NO_ORIGIN = "Le document n'est pas géoréférencé !"
@@ -296,7 +298,7 @@ class DlgBbox(c4d.gui.GeDialog):
 
         self.SetTitle("swisstopo extractor")
         # MAIN GROUP
-        self.GroupBegin(500, flags=c4d.BFH_CENTER, cols=1, rows=3)
+        self.GroupBegin(500, flags=c4d.BFH_CENTER, cols=1, rows=6)
         self.GroupBorderSpace(self.MARGIN*2, self.MARGIN*2, self.MARGIN*2, self.MARGIN*2)
 
         # GEOLOCALISATION
@@ -392,8 +394,14 @@ class DlgBbox(c4d.gui.GeDialog):
 
         self.GroupEnd()
 
-        self.GroupEnd()
+        #ETAT DU TELECHARGEMENT
+        #self.GroupBegin(700, flags=c4d.BFH_SCALEFIT, cols=1, rows=1)
+        #self.GroupBorderSpace(self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN)
 
+        self.AddStaticText(self.ID_TXT_DOWNLOAD_STATUS, flags=c4d.BFH_RIGHT, initw=500, inith=0, name="Pas de téléchargement en cours", borderstyle=c4d.BORDER_WITH_TITLE_BOLD)
+
+        #self.GroupEnd()
+        self.GroupEnd()
         return True
 
     def InitValues(self):
@@ -598,8 +606,6 @@ class DlgBbox(c4d.gui.GeDialog):
 
             if bbox:
                 xmin,ymin,xmax,ymax = bbox
-
-
                 #self.dic_downloads = {}
                 urls =[]
 
@@ -645,11 +651,10 @@ class DlgBbox(c4d.gui.GeDialog):
                     return True
                 #pth = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo'
 
-                dirs = []
+                self.dirs = []
 
                 #list de tuple url,fn_dest pour envoyer dans le Thread
-                dwload_lst = []
-
+                self.dwload_lst = []
 
                 for url in urls:
                     name_file = url.split('/')[-1]
@@ -659,7 +664,7 @@ class DlgBbox(c4d.gui.GeDialog):
                         path_dir+='_10cm'
                     elif '_0.5_'in name_file:
                         path_dir+='_50cm'
-                    elif '_2_'in name_file:
+                    elif '_2_'in name_file and not 'swissbuildings3d' in name_file :
                         path_dir+='_2m'
 
                     if not os.path.isdir(path_dir):
@@ -668,19 +673,21 @@ class DlgBbox(c4d.gui.GeDialog):
                     fn = os.path.join(path_dir,name_file)
                     name,ext = os.path.splitext(fn)
 
-                    dirs.append(path_dir)
+                    self.dirs.append(path_dir)
 
-                    dwload_lst.append((url,fn))
+                    self.dwload_lst.append((url,fn))
 
 
                 #LANCEMENT DU THREAD
-                self.thread = ThreadDownload(dwload_lst)
+                self.thread = ThreadDownload(self.dwload_lst)
                 self.thread.Start()
+
+                #lancement du timer pour voir l'avancement du téléchargement
+                self.SetTimer(500)
                 return True
 
-
                 #création des fichiers vrt pour les rasters
-                for directory in dirs:
+                for directory in self.dirs:
                     name = os.path.basename(directory)
                     if 'swissalti3d' in name or 'swissimage' in name:
                         vrt_file = createVRTfromDir(directory, path_to_gdalbuildvrt = None)
@@ -694,11 +701,22 @@ class DlgBbox(c4d.gui.GeDialog):
 
 
 
-
-
-
-
         return True
+
+    def Timer(self,msg):
+        nb = 0
+        for url,fn in self.dwload_lst:
+            if os.path.isfile(fn):
+                nb+=1
+
+        self.SetString(self.ID_TXT_DOWNLOAD_STATUS,f'nombre de fichiers téléchargés : {nb}/{len(self.dwload_lst)}')
+
+        #si le thread est terminé on arr^ête le Timer et on lance la création des vrt
+        if not self.thread.IsRunning():
+            self.SetTimer(0)
+            self.SetString(self.ID_TXT_DOWNLOAD_STATUS,f'Téléchargement terminé')
+
+
 
     def getDialogBbox(self):
 
