@@ -16,6 +16,9 @@ from datetime import datetime
 
 CONTAINER_ORIGIN =1026473
 
+#date et heure du ciel physique
+DATE_HEURE = '21.06.2022 09:00:00'
+
 def lv95towgs84(x,y):
     url = f'http://geodesy.geo.admin.ch/reframe/lv95towgs84?easting={x}&northing={y}&format=json'
 
@@ -51,7 +54,7 @@ def main():
     
     
     # Parse the time string
-    dt = datetime.strptime('21.06.2022 09:00:00',"%d.%m.%Y %H:%M:%S")
+    dt = datetime.strptime(DATE_HEURE,"%d.%m.%Y %H:%M:%S")
     dtd = sky[c4d.SKY_DATE_TIME]
 
     # Fills the Data object with the DateTime object

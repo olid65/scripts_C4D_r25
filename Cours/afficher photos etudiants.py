@@ -70,7 +70,7 @@ if __name__=='__main__':
     #path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos'
     path = '/Users/olivierdonze/switchdrive/COURS/Projet_AP1_2020/images'
     path = '/Users/olivierdonze/switchdrive/COURS/Projet_AP1_2019/photos_etudiants'
-    path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos/Groupe3'
+    path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos/Groupe1'
     lst = glob(path+'/*.jpg')
 
     dlg = MyDialog(lst)
