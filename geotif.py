@@ -79,6 +79,7 @@ def getCalageFromGeoTif(fn):
                 rec = f.read(nb_bytes)
                 [val] = s.unpack(rec)
                 val_px.append(val)
+                
         val_px_x,val_px_y,v_z = val_px
 
         #MATRICE DE CALAGE (coin en bas à gauche)
@@ -118,6 +119,7 @@ def main():
     fn ='/Users/olivierdonze/Downloads/exportImage(1).tiff'
     fn = '/Users/olivierdonze/Downloads/exportImage(2).tiff'
     fn = '/Users/olivierdonze/Downloads/exportImage(3).tiff'
+    fn = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Tramelan/extraction/swissalti3d_2m/swissalti3d_2019_2574-1230_2_2056_5728.tif'
 
     print(getCalageFromGeoTif(fn))
 
