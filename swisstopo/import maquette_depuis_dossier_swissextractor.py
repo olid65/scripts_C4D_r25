@@ -10,6 +10,12 @@ import subprocess
 #    return True
 
 
+sys.path.append('/Users/olivierdonze/Library/Preferences/Maxon/Maxon Cinema 4D R25_EBA43BEE/plugins')
+
+#ATTENTION à modifier dans plugin ou script définitif
+import SITG_C4D.libs.importRaster as raster
+
+
 DOC_NOT_IN_METERS_TXT = "Les unités du document ne sont pas en mètres, si vous continuez les unités seront modifiées.\nVoulez-vous continuer ?"
 CONTAINER_ORIGIN =1026473
 
@@ -134,7 +140,7 @@ def import_swissbuildings3D_from_list_dxf(lst_dxfs,doc, origin = None):
     #mise en cm des options d'importation DXF
     plug = c4d.plugins.FindPlugin(1001035, c4d.PLUGINTYPE_SCENELOADER)
     if plug is None:
-        print ("pas de module d'import 3DS")
+        print ("pas de module d'import DXF")
         return
     op = {}
 
@@ -263,16 +269,16 @@ def dirImgToTextFile(path_dir, ext = '.tif'):
 
 # Main function
 def main():
-    CONTAINER_ORIGIN =1026473 
+    CONTAINER_ORIGIN =1026473
     GEOTAG_ID = 1026472
 
 
-    pth = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Meyrin/extraction'
-    #pth = c4d.storage.LoadDialog(flags = c4d.FILESELECT_DIRECTORY,title="Dossier contenant les .dxf de swisstopo")
+    #pth = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Meyrin/extraction'
+    pth = c4d.storage.LoadDialog(flags = c4d.FILESELECT_DIRECTORY,title="Dossier contenant les .dxf de swisstopo")
     if not pth : return
-    
-    xmin,ymin,xmax,ymax = 2493952.3079999983,1120227.001566554,2494975.434279862,1120911.9981535845
-    
+
+    xmin,ymin,xmax,ymax = 2563927.389073766,1098085.3682007587,2568485.329199486,1102799.4432978476
+
     #création des fichiers vrt pour les rasters
     for directory in [x[0] for x in os.walk(pth)]:
         name = os.path.basename(directory)
@@ -286,7 +292,7 @@ def main():
                 raster_dst = vrt_file.replace('.vrt','.asc')
             extractFromBbox(vrt_file, raster_dst,xmin,ymin,xmax,ymax,path_to_gdal_translate = None)
 
-    
+
 
 
 
@@ -294,8 +300,8 @@ def main():
     lst_dxf = get_swissbuildings3D_dxfs(pth)
     lst_imgs = get_imgs_georef(pth)
 
-    if not lst_asc and not lst_dxf:
-        c4d.gui.MessageDialog("""Il n'y a ni terrain ni swissbuidings3D au format dxf dans le dossier, import impossible""")
+    if not lst_asc and not lst_dxf and not lst_imgs:
+        c4d.gui.MessageDialog("""Il n'y a ni terrain ni swissbuidings3D ni images géoréférée dans le dossier, import impossible""")
         return
 
     #document en mètre
@@ -327,8 +333,8 @@ def main():
             socle(mnt,doc)
             doc.InsertObject(mnt)
             doc.AddUndo(c4d.UNDOTYPE_NEWOBJ,mnt)
-            
-            
+
+
             #CUBE pour la découpe des batiments
             cube_mnt = get_cube_from_obj(mnt)
             pos = cube_mnt.GetRelPos()
@@ -340,11 +346,21 @@ def main():
                 cube_mnt
                 pos+= geotag[CONTAINER_ORIGIN] - doc[CONTAINER_ORIGIN]
                 cube_mnt.SetRelPos(pos)
+    #IMAGES
+    #si on a un mnt on le sélectionne pour que l'image se plaque dessus'
+    if mnt:
+        doc.SetActiveObject(mnt)
+    #sinon on déselectionne tout
+    else:
+        for obj in doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_NONE):
+            obj.DelBit(c4d.BIT_ACTIVE)
             
+    for img in lst_imgs :
+        raster.main(fn = img, fn_calage = None, alerte = True)
 
     #Swissbuidings3D
     import_swissbuildings3D_from_list_dxf(lst_dxf,doc, origin = origin)
-    
+
     lst_swissbuildings =[]
     obj = doc.GetFirstObject()
     while obj :
@@ -352,30 +368,30 @@ def main():
             lst_swissbuildings.append(obj)
             obj = obj.GetNext()
         else: break
-    
+
     if cube_mnt:
         boole = c4d.BaseObject(c4d.Oboole)
         boole[c4d.BOOLEOBJECT_HIGHQUALITY] = False
         boole[c4d.BOOLEOBJECT_TYPE] = c4d.BOOLEOBJECT_TYPE_INTERSECT
-        
+
         cube_mnt.InsertUnder(boole)
-        
+
         buildings = c4d.BaseObject(c4d.Onull)
         buildings.SetName('swissbuidings3D')
         for obj in lst_swissbuildings:
             obj.InsertUnderLast(buildings)
-        
+
         buildings.InsertUnder(boole)
-        
+
         doc.InsertObject(boole)
         doc.AddUndo(c4d.UNDOTYPE_NEWOBJ,boole)
     doc.EndUndo()
     c4d.EventAdd()
-    
+
     return
-    
-    
-    
+
+
+
     return
 
 
