@@ -21,6 +21,40 @@ CONTAINER_ORIGIN =1026473
 
 EPAISSEUR = 10 #épaisseur du socle depuis le points minimum
 
+
+def empriseVueHaut(bd, origine):
+    dimension = bd.GetFrame()
+    largeur = dimension["cr"] - dimension["cl"]
+    hauteur = dimension["cb"] - dimension["ct"]
+
+    mini = bd.SW(c4d.Vector(0, hauteur, 0)) + origine
+    maxi = bd.SW(c4d.Vector(largeur, 0, 0)) + origine
+
+    return mini, maxi, largeur, hauteur
+
+
+def empriseObject(obj, origine):
+    mg = obj.GetMg()
+
+    rad = obj.GetRad()
+    centre = obj.GetMp()
+
+    # 4 points de la bbox selon orientation de l'objet
+    pts = [c4d.Vector(centre.x + rad.x, centre.y + rad.y, centre.z + rad.z) * mg,
+           c4d.Vector(centre.x - rad.x, centre.y + rad.y, centre.z + rad.z) * mg,
+           c4d.Vector(centre.x - rad.x, centre.y - rad.y, centre.z + rad.z) * mg,
+           c4d.Vector(centre.x - rad.x, centre.y - rad.y, centre.z - rad.z) * mg,
+           c4d.Vector(centre.x + rad.x, centre.y - rad.y, centre.z - rad.z) * mg,
+           c4d.Vector(centre.x + rad.x, centre.y + rad.y, centre.z - rad.z) * mg,
+           c4d.Vector(centre.x - rad.x, centre.y + rad.y, centre.z - rad.z) * mg,
+           c4d.Vector(centre.x + rad.x, centre.y - rad.y, centre.z + rad.z) * mg]
+
+    mini = c4d.Vector(min([p.x for p in pts]), min([p.y for p in pts]), min([p.z for p in pts])) + origine
+    maxi = c4d.Vector(max([p.x for p in pts]), max([p.y for p in pts]), max([p.z for p in pts])) + origine
+
+    return mini, maxi
+
+
 def selectEdgesContour(op):
 
     nb = c4d.utils.Neighbor(op)
@@ -271,6 +305,16 @@ def dirImgToTextFile(path_dir, ext = '.tif'):
 def main():
     CONTAINER_ORIGIN =1026473
     GEOTAG_ID = 1026472
+    
+    doc = c4d.documents.GetActiveDocument()
+    origine = doc[CONTAINER_ORIGIN]
+
+    
+    op = doc.GetActiveObject()
+    if op :
+        print(empriseObject(op,origine))
+    
+    return
 
 
     #pth = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Meyrin/extraction'
@@ -354,7 +398,7 @@ def main():
     else:
         for obj in doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_NONE):
             obj.DelBit(c4d.BIT_ACTIVE)
-            
+
     for img in lst_imgs :
         raster.main(fn = img, fn_calage = None, alerte = True)
 

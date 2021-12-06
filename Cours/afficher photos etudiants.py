@@ -70,8 +70,8 @@ if __name__=='__main__':
     #path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos'
     path = '/Users/olivierdonze/switchdrive/COURS/Projet_AP1_2020/images'
     path = '/Users/olivierdonze/switchdrive/COURS/Projet_AP1_2019/photos_etudiants'
-    path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos/Groupe3'
-    #path = '/Users/olivierdonze/switchdrive/COURS/Cinema4D_niv1_2021/Photos_grpe1'
+    path = '/Users/olivierdonze/switchdrive/COURS/ORG_GN_2021/photos/Groupe2'
+    #path = '/Users/olivierdonze/switchdrive/COURS/Cinema4D_niv1_2021/photos_grpe2'
     lst = glob(path+'/*.jpg')
 
     dlg = MyDialog(lst)
