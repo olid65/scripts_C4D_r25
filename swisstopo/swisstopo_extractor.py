@@ -255,6 +255,10 @@ class DlgBbox(c4d.gui.GeDialog):
     CHECKBOX_BATI3D = 1502
     CHECKBOX_ORTHO2M = 1503
     CHECKBOX_ORTHO10CM = 1504
+    
+    BTON_GET_URLS_DOWNLOAD = 1600
+    
+    BTON_IMPORT_MAQUETTE = 1700
 
 
     LABEL_MNT2M = "MNT 2m"
@@ -263,7 +267,7 @@ class DlgBbox(c4d.gui.GeDialog):
     LABEL_ORTHO2M = "Orthophoto 2m"
     LABEL_ORTHO10CM = "Orthophoto 10cm"
 
-    BTON_GET_URLS_DOWNLOAD = 1600
+    
 
 
     TXT_NO_ORIGIN = "Le document n'est pas géoréférencé !"
@@ -382,10 +386,12 @@ class DlgBbox(c4d.gui.GeDialog):
         # LISTE DES TELECHARGEMNT
         self.AddStaticText(701, flags=c4d.BFH_LEFT, initw=0, inith=0, name=self.TITLE_LIST_TO_DOWNLOAD, borderstyle=c4d.BORDER_WITH_TITLE_BOLD)
 
-        self.GroupBegin(700, flags=c4d.BFH_CENTER, cols=1, rows=1)
+        self.GroupBegin(700, flags=c4d.BFH_CENTER, cols=1, rows=2)
         self.GroupBorderSpace(self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN)
 
         self.AddButton(self.BTON_GET_URLS_DOWNLOAD, flags=c4d.BFH_MASK, initw=250, inith=20, name="Téléchargement")
+        
+        self.AddButton(self.BTON_IMPORT_MAQUETTE, flags=c4d.BFH_MASK, initw=250, inith=20, name="Importer la maquette")
 
         self.GroupEnd()
 
@@ -398,6 +404,9 @@ class DlgBbox(c4d.gui.GeDialog):
         self.SetMeter(self.N_MIN, 0.0)
         self.SetMeter(self.E_MIN, 0.0)
         self.SetMeter(self.E_MAX, 0.0)
+        
+        self.HideElement(self.BTON_IMPORT_MAQUETTE, True)
+        
         return True
 
     def getBbox(self):
