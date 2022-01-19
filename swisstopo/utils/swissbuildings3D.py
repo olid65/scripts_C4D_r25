@@ -7,6 +7,10 @@ from glob import glob
 
 CONTAINER_ORIGIN =1026473
 
+SELECTION_NAME_TOITS = 'toits'
+SELECTION_NAME_FACADES ='facades'
+SELECTION_NAME_BASES ='bases'
+
 class Bbox(object):
     def __init__(self,mini,maxi):
 
@@ -242,15 +246,15 @@ def touchMin(poly,obj, miny):
 def classementPolygone(op):
     
     tag_base = c4d.SelectionTag(c4d.Tpolygonselection)
-    tag_base.SetName('bases')
+    tag_base.SetName(SELECTION_NAME_BASES)
     bs_base = tag_base.GetBaseSelect()
     
     tag_facade = c4d.SelectionTag(c4d.Tpolygonselection)
-    tag_facade.SetName('facades')
+    tag_facade.SetName(SELECTION_NAME_FACADES)
     bs_facade = tag_facade.GetBaseSelect()
     
     tag_toit = c4d.SelectionTag(c4d.Tpolygonselection)
-    tag_toit.SetName('toits')
+    tag_toit.SetName(SELECTION_NAME_TOITS)
     bs_toit = tag_toit.GetBaseSelect()
     #on récupère le tyype d'objet
     #dans le cas des Bâtiment ouvert et Toits flottants qu'on ne prenne pas la base

@@ -27,6 +27,8 @@ import utils.nearest_location
 import utils.dir_extract
 import utils.swissbuildings3D as swissbuildings3D
 
+from utils.swissbuildings3D import SELECTION_NAME_TOITS
+
 
 DOC_NOT_IN_METERS_TXT = "Les unités du document ne sont pas en mètres, si vous continuez les unités seront modifiées.\nVoulez-vous continuer ?"
 CONTAINER_ORIGIN =1026473
@@ -348,29 +350,29 @@ def tex_folder(doc, subfolder = None):
        si subfolder est renseigné crée également le sous-dossier
        et renvoie le chemin du sous dossier
        Si le doc n'est pas enregistré renvoie None
-       """   
-       
+       """
+
     path_doc = doc.GetDocumentPath()
     #si le doc n'est pas enregistré renvoie None
     if not path_doc : return None
-    
+
     path = os.path.join(path_doc,'tex')
-    
-    if subfolder:   
+
+    if subfolder:
         path = os.path.join(path,subfolder)
-    
+
     if not os.path.isdir(path):
         os.makedirs(path)
     return path
-    
-    
+
+
 
 # Main function
 def main():
-    
+
 
     doc = c4d.documents.GetActiveDocument()
-    
+
     #print(utils.nearest_location.get(doc))
     #print(utils.dir_extract.create(doc))
     #return
@@ -390,7 +392,7 @@ def main():
 
     mini,maxi = empriseObject(op,origine)
     xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
-    
+
     suffixe_img = f'_{round(xmin)}_{round(ymin)}_{round(xmax)}_{round(ymax)}'
 
 
@@ -400,7 +402,7 @@ def main():
     if not pth : return
 
     #xmin,ymin,xmax,ymax = 2563927.389073766,1098085.3682007587,2568485.329199486,1102799.4432978476
-    
+
     lst_imgs =[]
 
     #création des fichiers vrt pour les rasters
@@ -416,11 +418,11 @@ def main():
                 path_dir_imgs = tex_folder(doc, subfolder = 'swisstopo_images')
                 nom_img = os.path.splitext(os.path.basename(vrt_file))[0]
                 nom_img+=suffixe_img + FORMAT_IMAGES
-                
+
                 raster_dst = os.path.join(path_dir_imgs,nom_img)
-                
+
                 lst_imgs.append(raster_dst)
-                
+
                 if not os.path.isfile(raster_dst):
                     extractFromBbox(vrt_file, raster_dst,xmin,ymin,xmax,ymax,form = None,path_to_gdal_translate = None)
 
@@ -496,12 +498,12 @@ def main():
     else:
         for obj in doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_NONE):
             obj.DelBit(c4d.BIT_ACTIVE)
-            
-    
+
+
     for img in lst_imgs :
         #raster.main(fn = img, fn_calage = None, alerte = True)
         fn_calage = img.replace(FORMAT_IMAGES,'.wld')
-        
+
         #il faut que l'image et le fichier de calage existe'
         if os.path.isfile(img) and os.path.isfile(fn_calage):
             gp = raster.Geopict(img,fn_calage,c4d.documents.GetActiveDocument())
@@ -515,14 +517,14 @@ def main():
                 tg = gp.creerGeoTag(mnt)
             tag = gp.creerTagTex(mnt, displayTag = False)
             tag[c4d.TEXTURETAG_RESTRICTION] = NAME_SELECTION_MNT
-        
+
         if buildings:
             #on regarde si il a un geotag
             if not buildings.GetTag(1026472,0):
                 tg = gp.creerGeoTag(buildings)
             tag = gp.creerTagTex(buildings, displayTag = False)
-            tag[c4d.TEXTURETAG_RESTRICTION] = 'toits'
-            
+            tag[c4d.TEXTURETAG_RESTRICTION] = SELECTION_NAME_TOITS
+
 
 
     ##############################################
