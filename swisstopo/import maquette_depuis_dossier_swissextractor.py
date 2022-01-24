@@ -6,6 +6,9 @@ import platform
 import urllib, json
 from datetime import datetime
 
+CONTAINER_ORIGIN =1026473
+GEOTAG_ID = 1026472
+
 # Script state in the menu or the command palette
 # Return True or c4d.CMD_ENABLED to enable, False or 0 to disable
 # Alternatively return c4d.CMD_ENABLED|c4d.CMD_VALUE to enable and check/mark
@@ -105,7 +108,7 @@ def socle(mnt,doc):
     alts = [(p*mg).y for p in mnt.GetAllPoints()]
     alt_min = min(alts) - EPAISSEUR
 
-    #tag de selelction de polygone
+    #tag de selection de polygone
     tag_sel_terrain = c4d.SelectionTag(c4d.Tpolygonselection)
     bs = tag_sel_terrain.GetBaseSelect()
     bs.SelectAll(mnt.GetPolygonCount())
@@ -368,40 +371,10 @@ def tex_folder(doc, subfolder = None):
 
 
 # Main function
-def main():
-
-
-    doc = c4d.documents.GetActiveDocument()
-
-    #print(utils.nearest_location.get(doc))
-    #print(utils.dir_extract.create(doc))
-    #return
-
-    CONTAINER_ORIGIN =1026473
-    GEOTAG_ID = 1026472
-
-
-    origine = doc[CONTAINER_ORIGIN]
-
-
-    op = doc.GetActiveObject()
-
-    if not op:
-        c4d.gui.MessageDialog("Il faut sélectionner un objet pour l'emprise")
-        return
-
-    mini,maxi = empriseObject(op,origine)
-    xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
-
+def main(doc,origine,pth,xmin,ymin,xmax,ymax):
+    #suffixe avec la bbox pour l'orthophoto
+    #pour ne pas refaire si l'image existe
     suffixe_img = f'_{round(xmin)}_{round(ymin)}_{round(xmax)}_{round(ymax)}'
-
-
-    #pth = 'E:/OD/Vallee_du_Trient/SIG/swisstopo_extraction_diligences/vernayaz'
-    pth = c4d.storage.LoadDialog(flags = c4d.FILESELECT_DIRECTORY,title="Dossier contenant les .dxf de swisstopo")
-    print(pth)
-    if not pth : return
-
-    #xmin,ymin,xmax,ymax = 2563927.389073766,1098085.3682007587,2568485.329199486,1102799.4432978476
 
     lst_imgs =[]
 
@@ -430,10 +403,6 @@ def main():
                 raster_dst = vrt_file.replace('.vrt','.asc')
                 extractFromBbox(vrt_file, raster_dst,xmin,ymin,xmax,ymax,form = 'AAIGrid',path_to_gdal_translate = None)
 
-
-
-
-
     lst_asc = [fn_asc for fn_asc in glob(os.path.join(pth,'*.asc'))]
     #lst_dxf = get_swissbuildings3D_dxfs(pth)
     #lst_imgs = get_imgs_georef(pth)
@@ -453,10 +422,6 @@ def main():
         unit = c4d.DOCUMENT_UNIT_M
         usdata.SetUnitScale(scale, unit)
         doc[c4d.DOCUMENT_DOCUNIT] = usdata
-
-
-
-    origin = doc[CONTAINER_ORIGIN]
 
     doc.StartUndo()
 
@@ -552,4 +517,20 @@ def main():
 
 # Execute main()
 if __name__=='__main__':
-    main()
+    doc = c4d.documents.GetActiveDocument()
+    origine = doc[CONTAINER_ORIGIN]
+
+    op = doc.GetActiveObject()
+    if not op:
+        c4d.gui.MessageDialog("Il faut sélectionner un objet pour l'emprise")
+    
+    if op:
+        #
+        #pth = 'E:/OD/Vallee_du_Trient/SIG/swisstopo_extraction_diligences/vernayaz'
+        pth = c4d.storage.LoadDialog(flags = c4d.FILESELECT_DIRECTORY,title="Dossier contenant les .dxf de swisstopo")
+        
+        if pth : 
+    
+            mini,maxi = empriseObject(op,origine)
+            xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
+            main(doc,origine,pth,xmin,ymin,xmax,ymax)
