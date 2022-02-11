@@ -267,6 +267,13 @@ def extractFromBbox(raster_srce, raster_dst,xmin,ymin,xmax,ymax,form = None, pat
 
     return False
 
+#gdalwarp -overwrite -of {form} -cutline {fn_shp} -tr {cellsize} {cellsize} -cl decoupe_buffer1m -crop_to_cutline {fn_vrt} {fn_asc}
+
+def extractFromSpline(fn_shp,raster_srce, raster_dst,cellsize, form = 'AAIGrid', path_to_gdal_translate = None):
+    layer_name = os.path.basename(fn_shp)[:-4]
+    pass
+
+
 def dirImgToTextFile(path_dir, ext = '.tif'):
     """crée un fichier texte avec le chemin de l'image pour chaque ligne"""
     fn_txt = path_dir+'.txt'
@@ -523,14 +530,14 @@ if __name__=='__main__':
     op = doc.GetActiveObject()
     if not op:
         c4d.gui.MessageDialog("Il faut sélectionner un objet pour l'emprise")
-    
+
     if op:
         #
         #pth = 'E:/OD/Vallee_du_Trient/SIG/swisstopo_extraction_diligences/vernayaz'
         pth = c4d.storage.LoadDialog(flags = c4d.FILESELECT_DIRECTORY,title="Dossier contenant les .dxf de swisstopo")
-        
-        if pth : 
-    
+
+        if pth :
+
             mini,maxi = empriseObject(op,origine)
             xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
             main(doc,origine,pth,xmin,ymin,xmax,ymax)

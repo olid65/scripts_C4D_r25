@@ -3,8 +3,6 @@ import os
 import random
 import math
 
-
-
 # Script state in the menu or the command palette
 # Return True or c4d.CMD_ENABLED to enable, False or 0 to disable
 # Alternatively return c4d.CMD_ENABLED|c4d.CMD_VALUE to enable and check/mark
