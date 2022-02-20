@@ -33,7 +33,7 @@ def createOutline(sp,distance,doc):
     else :
         return None
 
-def main(sp,doc,fn = None,buffer = 0):
+def shapefileFromSpline(sp,doc,fn = None,buffer = 0):
     origine = doc[CONTAINER_ORIGIN]
     if not origine:
         print("pas d'origine")
@@ -69,8 +69,6 @@ def main(sp,doc,fn = None,buffer = 0):
             poly.append([[p.x,p.z] for p in pts[id_pt:id_pt+cnt]])
             id_pt +=cnt
 
-
-
     if not fn : return
     with shapefile.Writer(fn,shapefile.POLYGON) as w:
         w.field('id','I')
@@ -79,7 +77,6 @@ def main(sp,doc,fn = None,buffer = 0):
 
         fichierPRJ(fn)
 
-
 if __name__=='__main__':
     sp = op.GetRealSpline()
-    main(sp,doc, buffer = 1)
+    shapefileFromSpline(sp,doc, buffer = 1)
