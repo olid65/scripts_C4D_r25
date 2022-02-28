@@ -72,7 +72,7 @@ def getCalageFromGeoTif(fn):
                 rec = f.read(nb_bytes)
                 [val] = s.unpack(rec)
                 val_px.append(val)
-                
+
         val_px_x,val_px_y,v_z = val_px
 
         #MATRICE DE CALAGE (coin en bas à gauche)
@@ -108,22 +108,23 @@ def getCalageFromGeoTif(fn):
 #TODO VERIFIER COORDONNEES à mon avis il faudrait enlever la largeur d'un pixel....'
 
 def main():
-    
+
     fn_tif = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_IMAGES, title="Choose a GeoTif Image:")
-    
+
     if not fn_tif : return
-    
-    
-    
+
+
+
     #fn_tif = '/Users/olivierdonze/Documents/TEMP/test_ESRI_API_REST/2496288_1121312_2496689_1121548.tif'
 
     val_px_x,val_px_y,coord_x,coord_y = getCalageFromGeoTif(fn_tif)
-    
+    print(val_px_x,val_px_y,coord_x,coord_y)
+
     origine = doc[CONTAINER_ORIGIN]
     if not origine:
         doc[CONTAINER_ORIGIN] = c4d.Vector(val_px_x,0,val_px_y)
         origine = doc[CONTAINER_ORIGIN]
-    
+
     bmp = c4d.bitmaps.BaseBitmap()
     bmp.InitWith(fn_tif)
 
@@ -138,7 +139,8 @@ def main():
     poly = c4d.PolygonObject(nb_pts,nb_polys)
     pts = []
     polys =[]
-    pos = c4d.Vector(val_px_x,0,val_px_y)
+    pos = c4d.Vector(val_px_x/2,0,val_px_y/2)
+    print(pos)
     i = 0
     id_poly =0
 
@@ -147,7 +149,7 @@ def main():
             bmp.GetPixelCnt(row, line, 1, memoryView, inc, c4d.COLORMODE_GRAYf, c4d.PIXELCNT_0)
             [y] = struct.unpack('f', bytes(memoryView[0:4]))
             pos.y = y
-            pts.append(c4d.Vector(pos)-origine)
+            pts.append(c4d.Vector(pos))
             pos.x+=val_px_x
 
             if line >0 and row>0:
@@ -168,6 +170,8 @@ def main():
     poly.Message(c4d.MSG_UPDATE)
 
     doc.InsertObject(poly)
+    pos = c4d.Vector(coord_x,0,coord_y)-origine
+    poly.SetAbsPos(pos)
     c4d.EventAdd()
 
 

@@ -110,8 +110,6 @@ dico_func = {
                 'MultiLineString':multilinestring,
 }
 
-
-
 # Main function
 def main():
     fn = '/Users/olivierdonze/Documents/TEMP/geojson/export_splines.geojson'

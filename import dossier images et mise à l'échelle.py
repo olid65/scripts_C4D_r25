@@ -29,7 +29,7 @@ CODE_RESOLUTION = 'dpi' #example 300dpi
 
 DEFAULT_PROJECTION = 'top'
 DEFAULT_SCALE = 500
-DEFAULT_RESOLUTION = 300
+DEFAULT_RESOLUTION = 72
 
 #si jamais il y a le module unidecode
 #qui fait ça très bien, mais il faut l'installer !
@@ -144,7 +144,7 @@ def creer_plan(nom,mat,width,height, projection):
     plan[c4d.PRIM_PLANE_HEIGHT]=height
     plan[c4d.PRIM_PLANE_SUBW]=1
     plan[c4d.PRIM_PLANE_SUBH]=1
-    
+
     DIC_TYPES = {'top':['top','haut','plan','carte'],
                  'front':['coupe','elevation','face','profil','section','front','avant'],
                  'right':['right', 'droite'],
@@ -152,7 +152,7 @@ def creer_plan(nom,mat,width,height, projection):
                  'back':['back', 'arriere'],
                  'bottom':['bottom','dessous'],
                  'perspective':['perspective','vue','pers','croquis','dessin'],
-                 }    
+                 }
     if projection == 'top':
         plan[c4d.PRIM_AXIS]=c4d.PRIM_AXIS_YP
     elif projection == 'front':
@@ -176,7 +176,7 @@ def creer_plan(nom,mat,width,height, projection):
 
 def png_get_size_in_meter(fn_png):
     """ renvoie la taille en mètres d'un fichier png ou None si pas trouvé
-        attention il n'y a pas toujours l'info 'physical' en général si on 
+        attention il n'y a pas toujours l'info 'physical' en général si on
         réenregistre l'image sous dans psd cela fonctionne
         attention2 : utilise la lib png (un seul fichier png.py)"""
     with open(fn_png,'rb') as f:
@@ -205,17 +205,18 @@ def main():
     #fn = '/Users/olivierdonze/Documents/TEMP/jpegrgb_dissected.png'
 
     pth = '/Users/olivierdonze/switchdrive/Mandats/Versoix chemin Val-de-Travers/tex'
+    pth = '/Users/olivierdonze/switchdrive/Mandats/Parc_naturel_regional_vallee_Trient/c4d/tex'
     #pth = '/Volumes/My Passport Pro/PAV_projet_fed_2019/BACHELOR/PLAN_MASSES_GEOREF/PAV_2019_BACHELOR_PLAN_MASSES_GEOREF'
-    
+
 
     files_img = get_image_files(pth)
     doc.StartUndo()
     for fn in files_img:
         fn = join(pth,fn)
         largeur,hauteur = 0,0
-        
+
         alpha = -1
-        
+
         # si c'est un png on essaie de récupèrer directement la taille via la lib png
         if fn[-4:]=='.png':
             print(os.path.basename(fn))
@@ -230,32 +231,32 @@ def main():
         if not resolution : resolution = DEFAULT_RESOLUTION
         print(projection,scale,resolution)
         # si on n'a pas réussi à récupérer ces valeurs
-        # on utilise BaseBitmap     
+        # on utilise BaseBitmap
         if not largeur or not hauteur or alpha==-1:
             bmp = c4d.bitmaps.BaseBitmap()
-        
+
             result, isMovie = bmp.InitWith(fn)
             if result == c4d.IMAGERESULT_OK: #int check
                 width,height = bmp.GetSize()
                 #TODO -> voir dans quelles unité on est par rapport au doc !!!
                 if not largeur or not hauteur:
                     largeur = width / resolution * scale/2.54
-                    hauteur = width/ resolution * scale/2.54
+                    hauteur = height/ resolution * scale/2.54
                 else:
                     largeur *=scale
                     hauteur *=scale
-        
+
                 #on regarde s'il y a une couche alpha'
-                if bmp.GetInternalChannel(): 
+                if bmp.GetInternalChannel():
                     alpha = True
                 else:
                     alpha = None
-        
+
             else:
-                print(f'problème de lecture di fichier img : {basename(fn)}')
-            
-        
-        
+                print(f'problème de lecture de fichier  : {basename(fn)}')
+
+
+            print('----')
             bmp.FlushAll()
 
         mat = creer_mat(fn, alpha)
@@ -263,7 +264,7 @@ def main():
         doc.AddUndo(c4d.UNDOTYPE_NEWOBJ,mat)
 
         nom = basename(fn)
-        plan = creer_plan(nom,mat,hauteur,largeur,projection)
+        plan = creer_plan(nom,mat,largeur,hauteur,projection)
         doc.InsertObject(plan)
         doc.AddUndo(c4d.UNDOTYPE_NEWOBJ,plan)
 

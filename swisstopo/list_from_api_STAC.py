@@ -58,29 +58,75 @@ def get_list_from_STAC_swisstopo(url,xmin,ymin,xmax,ymax):
 
             if href[-8:] not in lst_indesirables:
                 res.append(dic['href'])
-                
+
     pprint(dico)
     return res
 
+LST = [  'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2565-1106/swissimage-dop10_2017_2565-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2565-1106/swissimage-dop10_2017_2565-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2565-1107/swissimage-dop10_2017_2565-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2565-1107/swissimage-dop10_2017_2565-1107_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2566-1106/swissimage-dop10_2017_2566-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2566-1106/swissimage-dop10_2017_2566-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2566-1107/swissimage-dop10_2017_2566-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2566-1107/swissimage-dop10_2017_2566-1107_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2567-1106/swissimage-dop10_2017_2567-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2567-1106/swissimage-dop10_2017_2567-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2567-1107/swissimage-dop10_2017_2567-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2017_2567-1107/swissimage-dop10_2017_2567-1107_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2565-1106/swissimage-dop10_2020_2565-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2565-1106/swissimage-dop10_2020_2565-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2565-1107/swissimage-dop10_2020_2565-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2565-1107/swissimage-dop10_2020_2565-1107_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2566-1106/swissimage-dop10_2020_2566-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2566-1106/swissimage-dop10_2020_2566-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2566-1107/swissimage-dop10_2020_2566-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2566-1107/swissimage-dop10_2020_2566-1107_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2567-1106/swissimage-dop10_2020_2567-1106_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2567-1106/swissimage-dop10_2020_2567-1106_2_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2567-1107/swissimage-dop10_2020_2567-1107_0.1_2056.tif',
+         'https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2567-1107/swissimage-dop10_2020_2567-1107_2_2056.tif']
+
+
+def suppr_doublons_list_ortho(lst):
+    """supprime les doublons de no de feuilles et garde uniquement la plus récente"""
+    dic = {}
+    for url in lst:
+        #exemple url
+        #https://data.geo.admin.ch/ch.swisstopo.swissimage-dop10/swissimage-dop10_2020_2567-1107/swissimage-dop10_2020_2567-1107_2_2056.tif
+        #on extrait le dernier élément en splitant par /
+        #on ne grade pas l'extension [:-4]
+        # et on split par _ pour récupérer nom,an,noflle,taille_px,epsg
+        nom,an,noflle,taille_px,epsg = url.split('/')[-1][:-4].split('_')
+        dic.setdefault((noflle,float(taille_px)),[]).append((an,url))
+    res = []
+    for noflle,lst in dic.items():
+        an, url = sorted(lst,reverse = True)[0]
+        res.append(url)
+    return res
+    
 # Main function
 def main():
     
+    #pprint(suppr_doublons_list_ortho(LST))
+
     origine = doc[CONTAINER_ORIGIN]
     bd = doc.GetActiveBaseDraw()
     camera = bd.GetSceneCamera(doc)
-    
+
     if not camera[c4d.CAMERA_PROJECTION] == c4d.Ptop:
         c4d.gui.MessageDialog("Activez une vue de haut")
         return True
 
     mini, maxi, larg, haut = empriseVueHaut(bd, origine)
-    
+
     xmin,ymin,xmax,ymax = mini.x,mini.z,maxi.x,maxi.z
-    
+
     url = 'https://data.geo.admin.ch/api/stac/v0.9/collections/ch.swisstopo.swissimage-dop10'
     lst = get_list_from_STAC_swisstopo(url,xmin,ymin,xmax,ymax)
-    
-    
-# Execute main()
+    pprint(lst)
+
+
+# Execute main(lst)
 if __name__=='__main__':
     main()
