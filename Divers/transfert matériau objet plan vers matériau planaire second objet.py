@@ -13,6 +13,61 @@ from math import pi
 #régler ces histoires de matrices de rotation pour l'instant c'est du bricolage!!!!!!
 #voir ligne 93
 
+PRECISION = 0.001
+
+def poly2plane(op):
+    #on regarde s'il y a 4 points'
+    if op.GetPointCount()!= 4:
+        return None
+
+    pts = [p*op.GetMg() for p in op.GetAllPoints()]
+
+    #attention un objet plan a les points qui ne tourne pas logiquement
+    #il faut prendre le polygone pour avoir le bon sens
+    poly = op.GetPolygon(0)
+
+    #on vérifie qu'il y a bien des angles droit
+    v1 = pts[poly.b]-pts[poly.a]
+    v2 = pts[poly.c]-pts[poly.b]
+    v3 = pts[poly.d]-pts[poly.c]
+    v4 = pts[poly.a]-pts[poly.d]
+
+    height = v1.GetLength()
+    width = v2.GetLength()
+
+    if abs(c4d.utils.GetAngle(v2,v1) - pi/2) > PRECISION : return False
+    if abs(c4d.utils.GetAngle(v3,v2) - pi/2) > PRECISION  : return False
+    if abs(c4d.utils.GetAngle(v4,v3) - pi/2) > PRECISION  : return False
+    if abs(c4d.utils.GetAngle(v1,v4) - pi/2) > PRECISION  : return False
+
+    #calcul du centre
+    lst_x = [p.x for p in pts]
+    lst_y = [p.y for p in pts]
+    lst_z = [p.z for p in pts]
+
+    x = (max(lst_x)+min(lst_x))/2
+    y = (max(lst_y)+min(lst_y))/2
+    z = (max(lst_z)+min(lst_z))/2
+    off = c4d.Vector(x,y,z)
+
+    v3 = v1.GetNormalized()
+    v1 = v2.GetNormalized()
+    v2 = v1.Cross( v3)
+
+    plane = c4d.BaseObject(c4d.Oplane)
+    plane.SetMg(c4d.Matrix(off,v1,v2,v3))
+
+    plane[c4d.PRIM_PLANE_WIDTH] = width
+    plane[c4d.PRIM_PLANE_HEIGHT] = height
+    
+    #copie des tags de texture
+    pred = None
+    for tag in op.GetTags():
+        if tag.CheckType(c4d.Ttexture):
+            tag_clone = tag.GetClone()
+            plane.InsertTag(tag_clone, pred = pred)
+            pred = tag_clone
+    return plane
 
 
 # Main function
@@ -22,15 +77,25 @@ def main():
     except:
         c4d.gui.MessageDialog("Vous devez sélectioner deux objets, l'objet plan avec le matériau, puis l'objet de destination")
         return
+    #si on n'a pas un plan on regarde si on a un objet polygonal rectangle qu'on transforme en pla'
     if not plane.CheckType(c4d.Oplane):
-        c4d.gui.MessageDialog("Le premier objet sélectionné doit être un objet plan")
-        return
+        test = False
+        if plane.CheckType(c4d.Opolygon):
+            plane = poly2plane(plane)
+            if plane : test = True
+        if not test:
+            c4d.gui.MessageDialog("Le premier objet sélectionné doit être un objet plan ou un polygone rectangle à 4 points")
+            return
     if not plane[c4d.PRIM_AXIS] == c4d.PRIM_AXIS_YP:
         c4d.gui.MessageDialog("Le plan n'est pas en orientation +Y")
         return
-
-
-    tag = plane.GetTag(c4d.Ttexture)
+    
+    
+    #on prend le dernier tag texture
+    tag = None
+    for tg in plane.GetTags():
+        if tg.CheckType(c4d.Ttexture):
+            tag = tg
 
     if not tag :
         c4d.gui.MessageDialog("Il n'y a pas de propriété matériau sur l'objet sélectionné")
@@ -56,10 +121,10 @@ def main():
         obj_dst.InsertTag(tag_dst,pred)
 
     #réglage du tag
-    
+
     ml = c4d.Matrix(plane.GetMg() *~obj_dst.GetUpMg()* ~obj_dst.GetMl())
     tag_dst.SetMl(ml)
-    
+
     #tag_dst.SetRot(c4d.Vector())
 
     tag_dst[c4d.TEXTURETAG_TILE] = False

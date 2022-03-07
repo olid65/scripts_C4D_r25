@@ -10,11 +10,10 @@ from math import pi
 
 PRECISION = 0.001
 
-# Main function
-def main():
+def poly2plane(op):
     #on regarde s'il y a 4 points'
     if op.GetPointCount()!= 4:
-        return False
+        return None
 
     pts = [p*op.GetMg() for p in op.GetAllPoints()]
 
@@ -55,17 +54,25 @@ def main():
 
     plane[c4d.PRIM_PLANE_WIDTH] = width
     plane[c4d.PRIM_PLANE_HEIGHT] = height
+    
+    #copie des tags de texture
+    pred = None
+    for tag in op.GetTags():
+        if tag.CheckType(c4d.Ttexture):
+            tag_clone = tag.GetClone()
+            plane.InsertTag(tag_clone, pred = pred)
+            pred = tag_clone
+    return plane
 
-    doc.InsertObject(plane, pred = op)
-    c4d.EventAdd()
-
-    return
-    for p1,p2 in zip([p1,p2,p3,p4],[p2,p3,p4,p1]):
-        v = p2-p1
-
-        if v.x !=0 and v.z !=0:
-            return False
-    return True
+def main():
+    plane = poly2plane(op)
+    if plane:
+        doc.StartUndo()
+        doc.InsertObject(plane, pred = op)
+        doc.AddUndo(c4d.UNDOTYPE_NEWOBJ, plane)
+        doc.EndUndo()
+        c4d.EventAdd()
+        
 
 # Execute main()
 if __name__=='__main__':
