@@ -59,7 +59,7 @@ def poly2plane(op):
 
     plane[c4d.PRIM_PLANE_WIDTH] = width
     plane[c4d.PRIM_PLANE_HEIGHT] = height
-    
+
     #copie des tags de texture
     pred = None
     for tag in op.GetTags():
@@ -71,13 +71,8 @@ def poly2plane(op):
 
 
 # Main function
-def main():
-    try :
-        plane, obj_dst = doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_SELECTIONORDER)
-    except:
-        c4d.gui.MessageDialog("Vous devez sélectioner deux objets, l'objet plan avec le matériau, puis l'objet de destination")
-        return
-    #si on n'a pas un plan on regarde si on a un objet polygonal rectangle qu'on transforme en pla'
+def transfert_mat(plane, obj_dst):
+    #si on n'a pas un plan on regarde si on a un objet polygonal rectangle qu'on transforme en plan
     if not plane.CheckType(c4d.Oplane):
         test = False
         if plane.CheckType(c4d.Opolygon):
@@ -85,12 +80,12 @@ def main():
             if plane : test = True
         if not test:
             c4d.gui.MessageDialog("Le premier objet sélectionné doit être un objet plan ou un polygone rectangle à 4 points")
-            return
+            return None
     if not plane[c4d.PRIM_AXIS] == c4d.PRIM_AXIS_YP:
         c4d.gui.MessageDialog("Le plan n'est pas en orientation +Y")
         return
-    
-    
+
+
     #on prend le dernier tag texture
     tag = None
     for tg in plane.GetTags():
@@ -98,7 +93,7 @@ def main():
             tag = tg
 
     if not tag :
-        c4d.gui.MessageDialog("Il n'y a pas de propriété matériau sur l'objet sélectionné")
+        c4d.gui.MessageDialog("Il n'y a pas de propriété matériau sur le premier objet sélectionné")
         return
     mat = tag[c4d.TEXTURETAG_MATERIAL]
 
@@ -145,8 +140,16 @@ def main():
     #tag_dst[c4d.TEXTURETAG_POSITION]
 
     c4d.EventAdd()
-
-    return
+    
+    
+# Main function
+def main():
+    try :
+        plane, obj_dst = doc.GetActiveObjects(c4d.GETACTIVEOBJECTFLAGS_SELECTIONORDER)
+    except:
+        c4d.gui.MessageDialog("Vous devez sélectioner deux objets, l'objet plan avec le matériau, puis l'objet de destination")
+        return
+    transfert_mat(plane, obj_dst)
 # Execute main()
 if __name__=='__main__':
     main()

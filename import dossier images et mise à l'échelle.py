@@ -228,6 +228,7 @@ def make_editable(op,doc):
 # Main function
 def main():
 
+
     #op[c4d.ID_BASELIST_ICON_COLORIZE_MODE] = c4d.ID_BASELIST_ICON_COLORIZE_MODE_CUSTOM
     #op[c4d.ID_BASELIST_ICON_COLOR] = c4d.Vector(0,1,0)
 
@@ -344,6 +345,12 @@ def main():
 
         nom = basename(fn)
         plan = creer_plan(nom,mat,largeur,hauteur,projection)
+        
+        #Tag d'affichage en mode constant
+        display_tag = c4d.BaseTag(c4d.Tdisplay)
+        display_tag[c4d.DISPLAYTAG_AFFECT_DISPLAYMODE] = True
+        display_tag[c4d.DISPLAYTAG_SDISPLAYMODE] = c4d.DISPLAYTAG_SDISPLAY_FLAT_WIRE
+        plan.InsertTag(display_tag)
 
         # si on a une couleur c'est que l'échelle et la résol sont normalement OK
         #on l'indique par la couleur de l'icône
