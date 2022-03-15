@@ -94,6 +94,7 @@ class DlgList(c4d.gui.GeDialog):
         if id == self.ID_BTON_CANCEL:
             self.lst.clear()
             self.Close()
+        return True
 
 
 def getLayers(root,lst=[]):

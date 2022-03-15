@@ -13,42 +13,61 @@ PREFIXE_DIST = 'dist'
 PREFIXE_DENSITE = 'dens'
 PREFIXE_LARGEUR = 'larg' #(largeur de cordon)
 
-CATEGORIES = ['emprise',
-              'arbres',
-              'arbres-surface',
-              'arbres-alignement',
-              'arbres-cordon',
-              'construction']
+#dans re le ? sert à dire que le caractère qui précède est facultatif
+CATEGORIES = [r'emprises?',
+              r'arbres?',
+              r'arbres?-surfaces?',
+              r'arbres?-alignements?',
+              r'arbres?-cordons?',
+              r'constructions?']
 
 
+def getInfo(txt,prefixe):
+    """renvoie une liste à une ou deux valeurs"""
+    p = re.compile(f'{prefixe}[0-9,/,]+', re.IGNORECASE)
+    req = re.search(p,txt)
+    if req:
+        return [abs(float(s)) for s in re.findall(r'-?\d+\.?\d*', txt)]
+    return None
 
 
 # Main function
 def main():
-    
-    lyr_name = 'arbres_baliveaux_existants_h12-15'
+
+    lyr_name = 'arbres-cordon_baliveaux_existants_h12-15'
     #lyr_name = 'arbres_baliveaux_existants_h12-15m'
-    lyr_name = 'arbres-surface_baliveaux_existants_h12m-15m_dist5-12'
+    #lyr_name = 'ARBRES-surface_baliveaux_existants_h12m-15m_dist5-12'
     #lyr_name = 'arbres_baliveaux_existants_h12m'
     
+    #extraction du type
+    typ = None
+    for cat in CATEGORIES:
+        regex = re.compile(cat, re.IGNORECASE)
+        if re.match(regex,lyr_name):
+            typ = cat.replace('s?','')
     hauteurs = None
     distances = None
-    for txt in  lyr_name.split('_'):
-        
-        #HAUTEURS
-        #on recherche si le texte commence par CODE_HAUTEUR suivi de nombre
-        p = re.compile(f'{PREFIXE_HAUTEUR}[0-9,/,]+', re.IGNORECASE)
-        req = re.search(p,txt)
-        #si c'est le cas on extrait le ou les hauteurs en float
-        if req:
-            hauteurs = [abs(float(s)) for s in re.findall(r'-?\d+\.?\d*', txt)]
-            
-        #DISTANCES
-        p = re.compile(f'{PREFIXE_DIST}[0-9,/,]+', re.IGNORECASE)
-        req = re.search(p,txt)
-        if req:
-            distances = [abs(float(s)) for s in re.findall(r'-?\d+\.?\d*', txt)]
-    print(hauteurs, distances)     
+    densites = None
+    largeurs = None
+    
+    for txt in  lyr_name.split('_')[1:]:
+        r = getInfo(txt,PREFIXE_HAUTEUR)
+        if r :
+            hauteurs = r
+        r = getInfo(txt,PREFIXE_DIST)
+        if r :
+            distances = r
+        r = getInfo(txt,PREFIXE_DENSITE)
+        if r :
+            densites = r
+        r = getInfo(txt,PREFIXE_LARGEUR)
+        if r :
+            largeurs = r
+    print(hauteurs)
+    print(distances)
+    print(densites)
+    print(largeurs)
+    return
 
 
 # Execute main()
