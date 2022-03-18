@@ -11,7 +11,8 @@ import sys
 #    return True
 
 def groupByLayer(lst_obj, doc,parent = None):
-    #dic = {obj.GetLayerObject(doc).GetName():value for obj in lst_obj if obj.GetLayerObject(doc)}
+    """regroupe la liste d'objet dans un neutre par calque
+       si les objet ont une indication de calque"""
     dic = {}
     for obj in lst_obj:
         lyr = obj.GetLayerObject(doc)
@@ -25,8 +26,8 @@ def groupByLayer(lst_obj, doc,parent = None):
             o.InsertUnder(nullo)
         doc.InsertObject(nullo,parent = parent, pred = pred)
         pred = nullo
-        
-        
+
+
 
 # Main function
 def main():
