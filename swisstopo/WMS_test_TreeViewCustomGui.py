@@ -109,7 +109,7 @@ def display_wms_swisstopo(layer):
         print(str(e))
 
     #on récupère l'ancienne image
-    old_fn = os.path.join(dossier_img,bd[c4d.BASEDRAW_DATA_PICTURE])  
+    old_fn = os.path.join(dossier_img,bd[c4d.BASEDRAW_DATA_PICTURE])
     bd[c4d.BASEDRAW_DATA_PICTURE_USEALPHA] = c4d.BASEDRAW_ALPHA_NORMAL
     bd[c4d.BASEDRAW_DATA_PICTURE] = fn
     bd[c4d.BASEDRAW_DATA_SIZEX] = maxi.x-mini.x
@@ -157,34 +157,6 @@ ID_CHECKBOX = 1
 ID_NAME = 2
 ID_OTHER = 3
 
-class TextureObject(object):
-    """
-    Class which represent a texture, aka an Item in our list
-    """
-    texturePath = "TexPath"
-    otherData = "OtherData"
-    _selected = False
-
-    def __init__(self, texturePath):
-        self.texturePath = texturePath
-        self.otherData += texturePath
-
-    @property
-    def IsSelected(self):
-        return self._selected
-
-    def Select(self):
-        self._selected = True
-
-    def Deselect(self):
-        self._selected = False
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return self.texturePath
-
 ##############################################################################################################################################
 
 class ListView(c4d.gui.TreeViewFunctions):
@@ -193,6 +165,7 @@ class ListView(c4d.gui.TreeViewFunctions):
         self.dlg = dlg
         self.listOfTexture = list() # Store all objects we need to display in this list
         self.layers = layers
+        self.layers_all = layers.copy()
         self.last = None
 
     def IsResizeColAllowed(self, root, userdata, lColID):
@@ -349,12 +322,23 @@ class ListView(c4d.gui.TreeViewFunctions):
 
 ##############################################################################################################################################
 
+#TODO : liste déroulante pour choisir des listes de choix prédéfinis (fichiers json)
+#-> aussi créer un bouton pour créer des listes
+
+#TODO : fonction pour chercher dans la liste
+
 class TestDialog(c4d.gui.GeDialog):
     
+    ID_LST_CHOIX_PREDF = 950
+    ID_TXT_SEARCH = 951
+
     ID_TREEGUI = 1000
     ID_BTON_ADD = 1001
     ID_ABSTRACT_TXT = 1200
     ID_URL_TXT = 1201
+
+    fn_choice = '__layers_choice.json'
+    fn_choice = os.path.join(os.path.dirname(__file__),fn_choice)
 
     def __init__(self,layers):
         self.layers = layers
@@ -362,6 +346,7 @@ class TestDialog(c4d.gui.GeDialog):
         self._treegui = None # Our CustomGui TreeView
 
     def CreateLayout(self):
+        
         # Create the TreeView GUI.
         customgui = c4d.BaseContainer()
         customgui.SetBool(c4d.TREEVIEW_BORDER, c4d.BORDER_THIN_IN)
@@ -374,15 +359,20 @@ class TestDialog(c4d.gui.GeDialog):
         customgui.SetBool(c4d.TREEVIEW_CURSORKEYS, True) # True if cursor keys should be processed.
         customgui.SetBool(c4d.TREEVIEW_NOENTERRENAME, False) # Suppresses the rename popup when the user presses enter.
         
-        self.GroupBegin(900, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT, cols=2, rows=2, title='', groupflags=0, initw=0, inith=0)
+        self.AddEditText(self.ID_TXT_SEARCH, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT,initw=0, inith=0)
+
+        self.GroupBegin(900, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT, cols=2, rows=3, title='', groupflags=0, initw=0, inith=0)
+        
+        
+        
         self._treegui = self.AddCustomGui(self.ID_TREEGUI, c4d.CUSTOMGUI_TREEVIEW, "", c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT, 300, 300, customgui)
         if not self._treegui:
             print ("[ERROR]: Could not create TreeView")
             return False
         self.AddMultiLineEditText(self.ID_ABSTRACT_TXT, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT,initw=0, inith=0, style=c4d.DR_MULTILINE_READONLY| c4d.DR_MULTILINE_WORDWRAP)
-        self.AddButton(self.ID_BTON_ADD, c4d.BFH_CENTER, name="Add")
-        
-        
+        self.AddButton(self.ID_BTON_ADD, c4d.BFH_CENTER, name="Ajouter à la liste")
+
+
         self.AddStaticText(self.ID_URL_TXT, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT, initw=0, inith=0, name='', borderstyle=0)
         self.GroupEnd()
         return True
@@ -403,31 +393,64 @@ class TestDialog(c4d.gui.GeDialog):
 
         # Set TreeViewFunctions instance used by our CUSTOMGUI_TREEVIEW
         self._treegui.SetRoot(self._treegui, self._listView, None)
-        
-        
+
+
         #
-        self.SetString(self.ID_ABSTRACT_TXT,'prout')
-        self.SetString(self.ID_URL_TXT,'prout-prout')
+        self.SetString(self.ID_ABSTRACT_TXT,'-')
+        self.SetString(self.ID_URL_TXT,'--')
         return True
 
     def Command(self, id, msg):
         # Click on button
-        if id == 1001:
-            # Add data to our DataStructure (ListView)
-            newID = len(self._listView.layers) + 1
-            tex = TextureObject("T{}".format(newID))
-            self._listView.layers.append(tex)
+        if id == self.ID_BTON_ADD:
+            self.addToChoice([lyr for lyr in self._listView.layers if lyr.IsSelected])
 
-            # Refresh the TreeView
-            self._treegui.Refresh()
-
+        if id == self.ID_TXT_SEARCH:
+            txt = self.GetString(self.ID_TXT_SEARCH).lower()
+            if txt:
+                new_lyr = [lyr for lyr in self._listView.layers_all if txt in lyr.title.lower()]
+                self._listView.layers = new_lyr.copy()
+                
+                # Refresh the TreeView
+                self._treegui.Refresh()
+            else:
+                self._listView.layers = self._listView.layers_all.copy()
+                
+                # Refresh the TreeView
+                self._treegui.Refresh()
+                
         return True
-    
+
     def majTxt(self):
         if self._listView.last:
             self.SetString(self.ID_ABSTRACT_TXT,self._listView.last.abstract)
             self.SetString(self.ID_URL_TXT,self._listView.last.name)
         return True
+
+    def addToChoice(self,lst, encoding = 'utf-8'):
+        
+        data = [{'Name':lyr.name,'Title':lyr.title,'Abstract':lyr.abstract} for lyr in lst]
+        
+        #si le fichier de choix existe on l'ouvre et on fusionne les datas
+        data_exist = None
+        if os.path.isfile(self.fn_choice):
+            with open(self.fn_choice,'r') as f:
+                data_exist = json.loads(f.read())
+                
+        if data_exist:
+            for lyr in data_exist:
+                if lyr not in data:
+                    data.append(lyr)
+        #tri de la liste par ordre alpha name 
+        #-> TODO trier par organisme (à extraire dans nom) puis titre
+        temp = [(lyr['Name'].split('.')[1],lyr['Title'],lyr) for lyr in data]
+        data = [lyr for organisme,title,lyr in sorted(temp)]
+
+        with open(self.fn_choice,'w') as f:
+            f.write(json.dumps(data,indent=2))
+            
+
+
 
 # Main function
 def getLayersFromJson(fn = '/Users/olivierdonze/Library/Preferences/Maxon/Maxon Cinema 4D R25_EBA43BEE/library/scripts/swisstopo/wms.geo.admin.ch_layers_only.json'):

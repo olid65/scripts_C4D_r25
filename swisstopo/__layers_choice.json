@@ -1,0 +1,107 @@
+[
+  {
+    "Name": "ch.bafu.biogeographische_regionen",
+    "Title": "R\u00e9gions biog\u00e9ographiques",
+    "Abstract": "La base du d\u00e9veloppement des r\u00e9gions biog\u00e9ographiques de Suisse (6 ou 12 classes) \u00e9tait les surfaces homog\u00e8nes des bassins fluviaux, dans lesquels les informations pertinentes et suffisamment compl\u00e8tes sur les esp\u00e8ces provenant des centres de donn\u00e9es info-faune, info-flore, station ornithologique et bryophytes ont \u00e9t\u00e9 analys\u00e9es et class\u00e9es selon des groupes de similarit\u00e9.Les donn\u00e9es faunistiques ont \u00e9t\u00e9 trait\u00e9es sur la base de la m\u00e9thode de Wohlgemuth (1996), \u00e0 laquelle ont \u00e9t\u00e9 ajout\u00e9es d`autres m\u00e9thodes de calcul des indices de dissimilitude, des matrices d`esp\u00e8ces et des tests. Une grande partie des analyses a \u00e9t\u00e9 r\u00e9alis\u00e9e \u00e0 l`aide du logiciel libre R. Les r\u00e9sultats ont \u00e9t\u00e9 pr\u00e9sent\u00e9s dans un premier temps en six groupes, puis dans un deuxi\u00e8me temps en douze groupes. \u00c0 quelques exceptions pr\u00e8s, les limites des bassins versants ont \u00e9t\u00e9 \u00e9tablies : Dans quelques cas, des crit\u00e8res topographiques et des avis d`experts ont \u00e9t\u00e9 utilis\u00e9s."
+  },
+  {
+    "Name": "ch.bafu.bundesinventare-auen_vegetation_alpin",
+    "Title": "V\u00e9g\u00e9tation alluviales alpines",
+    "Abstract": "La protection des biotopes selon l`art. 18a de la Loi sur la protection de la nature et du paysage (LPN, RS 451) vise la protection efficace des surfaces d`importance nationale pour les types de biotopes les plus importants. L`inventaire f\u00e9d\u00e9ral des zones alluviales d`importance nationale (inventaire des zones alluviales) est entr\u00e9 en vigueur en 1992. 169 zones alluviales \u00e9taient inscrites. Entre 1995 et 1998, un inventaire des marges proglaciaires et des plaines alluviales alpines a \u00e9t\u00e9 r\u00e9alis\u00e9. 52 marges proglaciaires et 14 plaines alluviales alpines ont ensuite \u00e9t\u00e9 int\u00e9gr\u00e9es \u00e0 l`inventaire des zones alluviales en 2001 en tant que zones alluviales d`importance nationale. Entre 2003 et 2005, un relev\u00e9 plus d\u00e9taill\u00e9 de l`\u00e9tat des zones alluviales alpines a \u00e9t\u00e9 effectu\u00e9. Le jeu de g\u00e9odonn\u00e9es documente les donn\u00e9es brutes des relev\u00e9s de v\u00e9g\u00e9tation, ainsi que des donn\u00e9es compl\u00e9mentaires utiles \u00e0 des utilisations sp\u00e9cifiques (par exemple : donn\u00e9es relatives aux conflits)."
+  },
+  {
+    "Name": "ch.bafu.auen-vegetationskarten",
+    "Title": "V\u00e9g\u00e9tation dans zones alluviales",
+    "Abstract": "En 1987, afin de donner la possibilit\u00e9 aux cantons de prendre aussi rapidement que possible les mesures n\u00e9cessaires \u00e0 la protection des zones alluviales potentiellement d`importance nationale, l`OFEV leur a fourni une cartographie d\u00e9taill\u00e9e de la v\u00e9g\u00e9tation des 165 objets de l`inventaire, tel qu`il a \u00e9t\u00e9 mis en consultation. La m\u00e9thode de cartographie a \u00e9t\u00e9 d\u00e9crite dans le rapport technique CE 199 (OFEFP, 1993). Elle s`est appuy\u00e9e sur l`interpr\u00e9tation de photographies a\u00e9riennes, suivie d`une v\u00e9rification et d`une cartographie dans le terrain, \u00e0 l`\u00e9chelle 1 : 10 000. Les cartes montrent quelles unit\u00e9s de v\u00e9g\u00e9tation (v\u00e9g\u00e9tation primaire et, en partie, v\u00e9g\u00e9tation compl\u00e9mentaire) et quelles influences anthropiques (utilisations ou ` atteintes `) ont \u00e9t\u00e9 identifi\u00e9es au moment de la cartographie. Parmi les objets qui ont \u00e9t\u00e9 agrandis apr\u00e8s la consultation, les surfaces additionnelles ont \u00e9t\u00e9, dans 23 cas, recens\u00e9es et cartographi\u00e9es selon les m\u00eames crit\u00e8res au cours d`une seconde phase de cartographie. Depuis, presque tous les objets nouvellement admis dans l`inventaire des zones alluviales, dans le cadre du 2\u00e8me compl\u00e9ment (\u00e9tape a en 2003 et \u00e9tape b en 2017), ont \u00e9t\u00e9 recens\u00e9s par photogramm\u00e9trie au moyen de photographies a\u00e9riennes \u00e0 infrarouge \u00e0 l`\u00e9chelle 1 : 5 000 et cartographi\u00e9s sur le terrain selon la m\u00eame m\u00e9thode. Les zones alluviales alpines (1er compl\u00e9ment \u00e0 l`inventaire des zones alluviales de 2001) ont \u00e9t\u00e9 cartographi\u00e9es selon une m\u00e9thode sp\u00e9cifique, adapt\u00e9e \u00e0 ce niveau d`altitude et \u00e9galement publi\u00e9es sur map.geo.admin.ch (base de donn\u00e9es ` V\u00e9g\u00e9tation alluviale alpine `)."
+  },
+  {
+    "Name": "ch.bafu.bundesinventare-auen_anhang2",
+    "Title": "Zones alluviales - Annexe 2",
+    "Abstract": "On entend par zones alluviales les zones inondables en bordure de lacs et cours d`eaux, ces zones constituant des biotopes naturels. En mai 1981, le mandat d`\u00e9tablir l`inventaire scientifique des zones alluviales a \u00e9t\u00e9 donn\u00e9 par le DFI \u00e0 l`Institut f\u00e9d\u00e9ral des recherches foresti\u00e8res (aujourd`hui Institut f\u00e9d\u00e9ral de recherches sur la for\u00eat, la neige et le paysage, FNP). Ce mandat a \u00e9t\u00e9 \u00e9labor\u00e9 par le groupe `Vegetationskunde` (g\u00e9ographie botanique).Conform\u00e9ment \u00e0 l`article 18a de la loi f\u00e9d\u00e9rale du 1er juillet 1966 sur la protection de la nature et du paysage (LPN) - en vigueur depuis le 1er f\u00e9vrier 1988 - le Conseil f\u00e9d\u00e9ral d\u00e9signe les biotopes d`importance nationale, en d\u00e9termine la situation et pr\u00e9cise les buts vis\u00e9s par la protection. Il ne le fait toutefois qu`apr\u00e8s avoir pris l`avis des cantons. Conform\u00e9ment \u00e0 l`article 18a LPN, le Conseil f\u00e9d\u00e9ral a arr\u00eat\u00e9 en 1992 l`entr\u00e9e en vigueur de l`inventaire f\u00e9d\u00e9ral des zones alluviales en tant que deuxi\u00e8me inventaire f\u00e9d\u00e9ral. Cet inventaire compte 169 objets, et a \u00e9t\u00e9 r\u00e9vis\u00e9 en 2001, 2003, 2007 et 2017. Entre 1995 et 1997, il a \u00e9t\u00e9 r\u00e9vis\u00e9 et compl\u00e9t\u00e9 d`un point de vue objectif par l`inventaire des marges proglaciaires et des plaines alluviales alpines. Il compte actuellement 326 objets. De plus, l`annexe 2 comprend 27 objets dont la mise au net n`est pas termin\u00e9e. Leur protection est soumise \u00e0 la d\u00e9cision de leur inclusion dans l`annexe 1 en vertu de l`ordonnance sur la protection de la nature et du paysage (OPN) et de l`article 7 de l`ordonnance sur les zones alluviales."
+  },
+  {
+    "Name": "ch.swisstopo.hiks-siegfried",
+    "Title": "Carte Siegfried Premi\u00e8re \u00e9dition",
+    "Abstract": "L`Atlas topographique de la Suisse a \u00e9t\u00e9 publi\u00e9 entre 1870 et 1926, initialement sous la direction du colonel Hermann Siegfried. Cest la premi\u00e8re carte d`ensemble d\u00e9taill\u00e9e de la Suisse \u00e0 l`\u00e9chelle 1:25`000 pour le Plateau central, le Jura et le sud du Tessin et, au 1:50`000, pour les Alpes. Au total, si l`on tient compte de la mise \u00e0 jour p\u00e9riodique effectu\u00e9e jusqu`en 1949, plus de 4000 feuilles mises \u00e0 jour ont \u00e9t\u00e9 publi\u00e9es. Deux techniques diff\u00e9rentes ont \u00e9t\u00e9 appliqu\u00e9es pour l\u00e9laboration initiale: la gravure sur cuivre pour les 462 feuilles \u00e0 l`\u00e9chelle 1:25`000 et la lithographie pour les 142 feuilles au 1:50000. Toutes les \u00e9ditions ont \u00e9t\u00e9 scann\u00e9es et sont d\u00e9sormais disponibles sous forme num\u00e9rique pour des analyses du d\u00e9veloppement du paysage et d`autres applications."
+  },
+  {
+    "Name": "ch.vbs.schiessanzeigen",
+    "Title": "Avis de tir et zones de danger publi\u00e9s",
+    "Abstract": "Il y est repr\u00e9sent\u00e9 les zones de danger des avis de tir publi\u00e9s par l`Arm\u00e9e Suisse.Pour chacune de ces places de tir il y a la possibilit\u00e9 de voir la publication d`un avis de tir. Les avis de tir contiennent l`occupation attendue (jours et heures de tir) et d`autres remarques en relation avec les dangers (par ex. barrages sp\u00e9ciaux, armes engag\u00e9es, hauteur maximum lors d`engagement d`armes \u00e0 trajectoire courbe)."
+  },
+  {
+    "Name": "ch.vbs.kataster-belasteter-standorte-militaer",
+    "Title": "CSP militaire",
+    "Abstract": "Le cadastre officiel des sites pollu\u00e9s du DDPS r\u00e9pertorie tous les lieux d`accidents, d\u00e9p\u00f4ts et autres sites comportant des rebuts du DDPS, soit deux milliers en tout, ainsi que quelque 550 zones de buts. En cas d`atteinte \u00e0 l`environnement ou de danger, ces sites sont assainis selon l`ordonnance sur les sites contamin\u00e9s."
+  },
+  {
+    "Name": "ch.vbs.kataster-belasteter-standorte-militaer.oereb",
+    "Title": "CSP militaire RDPPF",
+    "Abstract": "Le cadastre officiel des sites pollu\u00e9s du DDPS r\u00e9pertorie tous les lieux d`accidents, d\u00e9p\u00f4ts et autres sites comportant des rebuts du DDPS, soit deux milliers en tout, ainsi que quelque 550 zones de buts. En cas d`atteinte \u00e0 l`environnement ou de danger, ces sites sont assainis selon l`ordonnance sur les sites contamin\u00e9s."
+  },
+  {
+    "Name": "ch.vbs.kataster-belasteter-standorte-militaer_v2_0.oereb",
+    "Title": "CSP militaire V2.0 RDPPF",
+    "Abstract": "Le cadastre officiel des sites pollu\u00e9s du DDPS r\u00e9pertorie tous les lieux d`accidents, d\u00e9p\u00f4ts et autres sites comportant des rebuts du DDPS, soit deux milliers en tout, ainsi que quelque 550 zones de buts. En cas d`atteinte \u00e0 l`environnement ou de danger, ces sites sont assainis selon l`ordonnance sur les sites contamin\u00e9s."
+  },
+  {
+    "Name": "ch.vbs.grunddispositiv-zeus",
+    "Title": "Carte Zeus",
+    "Abstract": "Dispositif de base `Zeus` (\u00e9dition en fac-simil\u00e9). Carte d\u00e9classifi\u00e9e. Ordre d`engagement de l`arm\u00e9e du 28.4.1989 (valable \u00e0 partir du 1.1.1990) et du dispositif de base combin\u00e9 correspondant datant du 31.10.1991 (valable \u00e0 partir du 1.1.1992)."
+  },
+  {
+    "Name": "ch.vbs.armeelogistikcenter",
+    "Title": "Centres logistiques de l`arm\u00e9e CLA",
+    "Abstract": "Cinq centres logistiques de l`arm\u00e9e (CLA) veillent \u00e0 ce que les troupes de l`Arm\u00e9e suisse obtiennent pour l`instruction et l`engagement les prestations logistiques n\u00e9cessaires."
+  },
+  {
+    "Name": "ch.vbs.panzerverschiebungsrouten",
+    "Title": "Itin\u00e9raires de d\u00e9placement des chars",
+    "Abstract": "Publication partielle des itin\u00e9raires de d\u00e9placement des chars du bureau des d\u00e9placement des chars. Cette publication permet de d\u00e9tecter et de signaler les changements dans la praticabilit\u00e9 des itin\u00e9raires. Comme auparavant, les troupes recoivent la carte approuv\u00e9e de la zone op\u00e9rationnelle du bureau des d\u00e9placement des chars."
+  },
+  {
+    "Name": "ch.vbs.milairspacechart",
+    "Title": "Mil Airspace Chart",
+    "Abstract": "La carte Mil Airspace Chart est une carte th\u00e9matique de l`aviation militaire qui a vu le jour en collaboration avec skyguide, swisstopo et les Forces a\u00e9riennes suisses. Reposant sur la carte a\u00e9ronautique OACI, elle est taill\u00e9e sur mesure pour r\u00e9pondre aux besoins des op\u00e9rations des Forces a\u00e9riennes suisses. Elle est publi\u00e9e une fois par an \u00e0 la date de la modification de la structure de l`espace a\u00e9rien de la Suisse."
+  },
+  {
+    "Name": "ch.vbs.armee-kriegsdenkmaeler",
+    "Title": "M\u00e9moriaux de l`arm\u00e9e et de guerre",
+    "Abstract": "L`inventaire des m\u00e9moriaux de l`arm\u00e9e et de guerre en Suisse inclut environ 900 sculptures, pierres et plaques comm\u00e9moratives, st\u00e8les, ob\u00e9lisques ou statues qui ont \u00e9t\u00e9 \u00e9rig\u00e9es au fil des ans en Suisse pour comm\u00e9morer des \u00e9v\u00e9nements et des personnages de l`histoire militaire. Elles comm\u00e9morent d`anciennes batailles suisses, la pr\u00e9sence de forces arm\u00e9es \u00e9trang\u00e8res en Suisse, des accidents et des catastrophes, des unit\u00e9s de troupes dissoutes, des personnalit\u00e9s marquantes de l`arm\u00e9e ou les deux services actifs du 20e si\u00e8cle et sont class\u00e9es en cons\u00e9quence. Certains \u00e9v\u00e9nements relatifs \u00e0 l`histoire militaire qui ne peuvent \u00eatre attribu\u00e9s sans aucun doute \u00e0 ces cat\u00e9gories sont \u00e9galement enregistr\u00e9s dans une cat\u00e9gorie sp\u00e9ciale."
+  },
+  {
+    "Name": "ch.vbs.sachplan-infrastruktur-militaer_kraft",
+    "Title": "PS militaire",
+    "Abstract": "Le plan sectoriel militaire (PSM) est un instrument de planification et de coordination de la Conf\u00e9d\u00e9ration au sens de l`art. 13 de la loi f\u00e9d\u00e9rale sur l`am\u00e9nagement du territoire (LAT; RS 700). Il contribue \u00e0 la s\u00e9curit\u00e9 territoriale ainsi qu`\u00e0 l`harmonisation des infrastructures et activit\u00e9s militaires avec les exigences sectorielles civiles. Il fixe en outre - conform\u00e9ment au concept de stationnement actuel - les objectifs et les instructions, contraignants pour les autorit\u00e9s, en mati\u00e8re d`infrastructures militaires soumises au PSM. Avec l`\u00e9volution de la politique de s\u00e9curit\u00e9 et militaire, les besoins d`infrastructures et d`utilisation du territoire de l`arm\u00e9e sont confront\u00e9s en permanence au changement. Le PSM est de ce fait r\u00e9guli\u00e8rement soumis \u00e0 des v\u00e9rifications et \u00e0 des adaptations. Le PSM comprend diff\u00e9rentes cat\u00e9gories d`objets : places d`armes, places de tir, places d`exercice, bases a\u00e9riennes, sites logistiques de l`arm\u00e9e, centres de recrutement, postes de franchissement et installations sp\u00e9ciales. Les infrastructures militaires de moindre dimension et celles qui sont soumises \u00e0 loi f\u00e9d\u00e9rale concernant la protection des ouvrages militaires (RS 510.518) ne figurent pas dans le PSM."
+  },
+  {
+    "Name": "ch.vbs.sachplan-infrastruktur-militaer_anhoerung",
+    "Title": "PSM consultation",
+    "Abstract": "Consultations en cours ou termin\u00e9es du plan sectoriel militaire (PSM)"
+  },
+  {
+    "Name": "ch.vbs.patrouilledesglaciers-a_rennen",
+    "Title": "Patrouille des Glaciers (course A)",
+    "Abstract": "La Patrouille des Glaciers (PDG) est une course militaire internationale de ski alpinisme de l`Arm\u00e9e Suisse, ouverte \u00e9galement aux patrouilles civiles. La course se d\u00e9roule de Zermatt \u00e0 Verbier (Parcours Z) respectivement d`Arolla \u00e0 Verbier (Parcours A). Elle doit \u00eatre accomplie en une seule \u00e9tape.Cette course unique se caract\u00e9rise par la longueur et l`altitude du profil du parcours ainsi que les exigences du milieu alpin. /"
+  },
+  {
+    "Name": "ch.vbs.patrouilledesglaciers-z_rennen",
+    "Title": "Patrouille des Glaciers (course Z)",
+    "Abstract": "La Patrouille des Glaciers (PDG) est une course militaire internationale de ski alpinisme de l`Arm\u00e9e Suisse, ouverte \u00e9galement aux patrouilles civiles. La course se d\u00e9roule de Zermatt \u00e0 Verbier (Parcours Z) respectivement d`Arolla \u00e0 Verbier (Parcours A). Elle doit \u00eatre accomplie en une seule \u00e9tape.Cette course unique se caract\u00e9rise par la longueur et l`altitude du profil du parcours ainsi que les exigences du milieu alpin."
+  },
+  {
+    "Name": "ch.vbs.retablierungsstellen",
+    "Title": "Postes de r\u00e9tablissement",
+    "Abstract": "Les postes de r\u00e9tablissement sont responsables de l`adaptation, du remplacement et de l`\u00e9change de l`\u00e9quipement personnel que les militaires poss\u00e8dent pendant la p\u00e9riode de leur service obligatoire."
+  },
+  {
+    "Name": "ch.vbs.logistikraeume-armeelogistikcenter",
+    "Title": "Secteurs logistiques des CLA",
+    "Abstract": "Zones de responsabilit\u00e9 des centres logistiques de l`arm\u00e9e (CLA)."
+  },
+  {
+    "Name": "ch.vbs.bundestankstellen-bebeco",
+    "Title": "Stations-service BEBECO",
+    "Abstract": "Emplacements des stations-service de la Conf\u00e9d\u00e9ration BEBECO<br>Indication concernant l`utilisation des stations AdBlue:<br> Les v\u00e9hicules de tourisme et les v\u00e9hicules utilitaires l\u00e9gers ne peuvent pas faire le plein \u00e0 ces stations, Haute pression. Veuillez pour cela vous adresser \u00e0 votre garage. Lubrifiants et produits d`entretien ne peut \u00eatre livr\u00e9 que sur commande t\u00e9l\u00e9phonique. <br><br> <b>Remarques concernant le ravitaillement:</b> <br> Les stations-service sont \u00e9quip\u00e9es d`automates permettant de se ravitailler au moyen de la CARD - BEBECO. <br> <br> a) Ravitaillement pendant les heures d`exploitation <ul> <li>V\u00e9hicules isol\u00e9s: sans pr\u00e9avis.</li> <li>Autres ravitaillements, en particulier pour la troupe: seulement apr\u00e8s entente avec la station-service concern\u00e9e, car les possibilit\u00e9s de distribution sont diverses, voire limit\u00e9es. </ul> b) Ravitaillement en dehors des heures d`exploitation <ul> <li>Stations marqu\u00e9es avec 24 h / 7: moyennant BEBECO-CARD, elles offrent la possibilit\u00e9 de se ravitailler en carburant 24 h sur 24, y compris le samedi et le dimanche. Par \u00e9gard aux riverains, cette possibilit\u00e9 est limit\u00e9e aux v\u00e9hicules isol\u00e9s.</li> </ul> <br> <b>Contact</b> <br> Mail: <a href=`mailto:lba.betrst.dienst@vtg.admin.ch`>lba.betrst.dienst@vtg.admin.ch</a>"
+  }
+]
