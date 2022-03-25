@@ -1,6 +1,7 @@
 import c4d
 import struct
 import json
+import os.path
 
 CONTAINER_ORIGIN = 1026473
 
@@ -107,18 +108,9 @@ def getCalageFromGeoTif(fn):
 
 #TODO VERIFIER COORDONNEES à mon avis il faudrait enlever la largeur d'un pixel....'
 
-def main():
-
-    fn_tif = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_IMAGES, title="Choose a GeoTif Image:")
-
-    if not fn_tif : return
-
-
-
-    #fn_tif = '/Users/olivierdonze/Documents/TEMP/test_ESRI_API_REST/2496288_1121312_2496689_1121548.tif'
-
+def importGeoTif(fn_tif,doc):
     val_px_x,val_px_y,coord_x,coord_y = getCalageFromGeoTif(fn_tif)
-    print(val_px_x,val_px_y,coord_x,coord_y)
+    #print(val_px_x,val_px_y,coord_x,coord_y)
 
     origine = doc[CONTAINER_ORIGIN]
     if not origine:
@@ -137,10 +129,11 @@ def main():
     nb_pts = width*height
     nb_polys = (width-1)*(height-1)
     poly = c4d.PolygonObject(nb_pts,nb_polys)
+    poly.SetName(os.path.basename(fn_tif))
     pts = []
     polys =[]
     pos = c4d.Vector(val_px_x/2,0,val_px_y/2)
-    print(pos)
+    #print(pos)
     i = 0
     id_poly =0
 
@@ -172,8 +165,17 @@ def main():
     doc.InsertObject(poly)
     pos = c4d.Vector(coord_x,0,coord_y)-origine
     poly.SetAbsPos(pos)
-    c4d.EventAdd()
 
+
+def main():
+
+    fn_tif = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_IMAGES, title="Choose a GeoTif Image:")
+
+    if not fn_tif : return
+
+    importGeoTif(fn_tif,doc)
+    c4d.EventAdd()
+    return
 
 if __name__ == '__main__':
     main()

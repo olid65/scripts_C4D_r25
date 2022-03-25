@@ -1,6 +1,8 @@
-import c4d,os,sys
+import c4d,sys
 import webbrowser
-
+import struct
+import json
+import os.path
 
 
 CONTAINER_ORIGIN =1026473
@@ -15,6 +17,166 @@ ORIGIN_DEFAULT = c4d.Vector(2500370.00,0.0,1117990.0) # île Rousseau
 # Alternatively return c4d.CMD_ENABLED|c4d.CMD_VALUE to enable and check/mark
 #def state():
 #    return True
+
+def getCalageFromGeoTif(fn):
+    """retourne la valeur du pixel en x et y et la position du coin en haut à gauche en x et y
+       attention c'est bien le coin du ratser et pas le centre du pixel
+       Ne fonctionne pas avec les rasters tournés, fonctionne bien avec les MNT de l'API REST d'ESRI
+       Ne fonctionne pas avec les tuiles du MNT de swisstopo"""
+
+    #voir page 16 pdf description tiff
+    #et sur https://docs.python.org/3/library/struct.html pour les codes lettres de struct
+    #le nombre en clé représente le type selon description du tif
+    # le tuple en valeur représente le nombre d'octets (bytes) et le code utilissé pour unpacker
+    # il y en a quelques un dont je ne suis pas sûr !
+    dic_types = {1:(1,'x'),
+                 2:(1,'c'),
+                 3:(2,'h'),
+                 4:(4,'l'),
+                 5:(8,'ll'),
+                 6:(1,'b'),
+                 7:(1,'b'),
+                 8:(2,'h'),
+                 9:(4,'i'),
+                 10:(8,'ii'),
+                 11:(4,'f'),
+                 12:(8,'d'),}
+
+    with open(fn,'rb') as f:
+        #le premier byte sert à savoir si on es en bigendian ou pas
+        r = f.read(2)
+        big = True
+        if r == b'II':
+            big = False
+        if big : big ='>'
+        else : big = '<'
+        #ensuite on a un nombre de verification ? -> normalement 42  sinon 43 pour les bigTiff
+        #le second c'est le début du premier IFD (image file directory) en bytes -> 8 en général (commence à 0)
+        s = struct.Struct(f"{big}Hl")
+        rec = f.read(6)
+        #print(s.unpack(rec))
+
+        #début de l'IFD' normalement commence à 8
+        #nombre de tags
+        s = struct.Struct(f"{big}H")
+        rec = f.read(2)
+        nb_tag, = s.unpack(rec)
+        dic_tags = {}
+        for i in range(nb_tag):
+            s = struct.Struct(f"{big}HHlHH")
+            rec = f.read(12)
+            no,typ,nb,value,xx = s.unpack(rec)
+            #print(no,typ,nb,value,xx)
+            dic_tags[no] = (typ,nb,value,xx)
+
+        #4 bytes pour si on a plusieurs IFD
+        s = struct.Struct(f"{big}l")
+        rec = f.read(4)
+
+        #VALEUR DES PIXELS
+        t = dic_tags.get(33550,None)
+        val_px = []
+        if t:
+            typ,nb,offset,xx = t
+            f.seek(offset)
+            nb_bytes,code = dic_types.get(typ,None)
+            for i in range(nb):
+                s = struct.Struct(f"{big}{code}")
+                rec = f.read(nb_bytes)
+                [val] = s.unpack(rec)
+                val_px.append(val)
+
+        val_px_x,val_px_y,v_z = val_px
+
+        #MATRICE DE CALAGE (coin en bas à gauche)
+        t = dic_tags.get(33922,None)
+        mat_calage = []
+        if t:
+            typ,nb,offset,xx = t
+            f.seek(offset)
+            nb_bytes,code = dic_types.get(typ,None)
+            for i in range(nb):
+                s = struct.Struct(f"{big}{code}")
+                rec = f.read(nb_bytes)
+                [val] = s.unpack(rec)
+                mat_calage.append(val)
+        coord_x = mat_calage[3]
+        coord_y = mat_calage[4]
+
+        #PROJECTION (pas utilisée pour l'instant dans la fonction)
+        t = dic_tags.get(34737,None)
+        if t:
+            typ,nb,offset,xx = t
+            f.seek(offset)
+            nb_bytes,code = dic_types.get(typ,None)
+            geoAscii = ''
+            for i in range(nb):
+                s = struct.Struct(f"{big}{code}")
+                rec = f.read(nb_bytes)
+                [car] = s.unpack(rec)
+                geoAscii+=car.decode('utf-8')
+
+        return val_px_x,val_px_y,coord_x,coord_y
+
+#TODO VERIFIER COORDONNEES à mon avis il faudrait enlever la largeur d'un pixel....'
+
+def importGeoTif(fn_tif,doc):
+    val_px_x,val_px_y,coord_x,coord_y = getCalageFromGeoTif(fn_tif)
+    #print(val_px_x,val_px_y,coord_x,coord_y)
+
+    origine = doc[CONTAINER_ORIGIN]
+    if not origine:
+        doc[CONTAINER_ORIGIN] = c4d.Vector(val_px_x,0,val_px_y)
+        origine = doc[CONTAINER_ORIGIN]
+
+    bmp = c4d.bitmaps.BaseBitmap()
+    bmp.InitWith(fn_tif)
+
+    width, height = bmp.GetSize()
+    #print(bmp.GetSize())
+    bits = bmp.GetBt()
+    inc = bmp.GetBt() // 8
+    bytesArray = bytearray(inc)
+    memoryView = memoryview(bytesArray)
+    nb_pts = width*height
+    nb_polys = (width-1)*(height-1)
+    poly = c4d.PolygonObject(nb_pts,nb_polys)
+    poly.SetName(os.path.basename(fn_tif))
+    pts = []
+    polys =[]
+    pos = c4d.Vector(val_px_x/2,0,val_px_y/2)
+    #print(pos)
+    i = 0
+    id_poly =0
+
+    for line in range(height):
+        for row in range(width):
+            bmp.GetPixelCnt(row, line, 1, memoryView, inc, c4d.COLORMODE_GRAYf, c4d.PIXELCNT_0)
+            [y] = struct.unpack('f', bytes(memoryView[0:4]))
+            pos.y = y
+            pts.append(c4d.Vector(pos))
+            pos.x+=val_px_x
+
+            if line >0 and row>0:
+                c=i
+                b=i-width
+                a=b-1
+                d = i-1
+
+                poly.SetPolygon(id_poly,c4d.CPolygon(a,b,c,d))
+                id_poly+=1
+
+            i+=1
+
+        pos.x = 0
+        pos.z-= val_px_y
+
+    poly.SetAllPoints(pts)
+    poly.Message(c4d.MSG_UPDATE)
+
+    doc.InsertObject(poly)
+    pos = c4d.Vector(coord_x,0,coord_y)-origine
+    poly.SetAbsPos(pos)
 
 class Bbox(object):
     def __init__(self,mini,maxi):
@@ -32,15 +194,15 @@ class Bbox(object):
                 self.min.x <= (bbx2.min.x + bbx2.taille.x) and
                 (self.min.z + self.taille.z) >= bbx2.min.z and
                 self.min.z <= (bbx2.min.z + bbx2.taille.z))
-        
+
     def xInside(self,x):
         """retourne vrai si la variable x est entre xmin et xmax"""
         return x>= self.min.x and x<= self.max.x
-    
+
     def zInside(self,y):
         """retourne vrai si la variable x est entre xmin et xmax"""
         return y>= self.min.z and y<= self.max.z
-        
+
     def isInsideX(self,bbox2):
         """renvoie 1 si la bbox est complètement à l'intérier
            renoive 2 si elle est à cheval
@@ -52,7 +214,7 @@ class Bbox(object):
         #si bbox1 est plus grand
         if bbox2.xmin < self.min.x and bbox2.xmax > self.max.x : return 2
         return 0
-    
+
     def isInsideZ(self,bbox2):
         """renvoie 1 si la bbox est complètement à l'intérier
            renoive 2 si elle est à cheval
@@ -64,7 +226,7 @@ class Bbox(object):
         #si bbox1 est plus grand
         if bbox2.ymin < self.min.z and bbox2.ymax > self.max.z : return 2
         return 0
-    
+
     def ptIsInside(self,pt):
         """renvoie vrai si point c4d est à l'intérieur"""
         return  self.xInside(pt.x) and self.zInside(pt.z)
@@ -73,7 +235,7 @@ class Bbox(object):
         x = self.min.x + random.random()*self.largeur
         z = self.min.z + random.random()*self.hauteur
         return c4d.Vector(x,y,z)
-    
+
     def GetSpline(self,origine = c4d.Vector(0)):
         """renvoie une spline c4d de la bbox"""
         res = c4d.SplineObject(4,c4d.SPLINETYPE_LINEAR)
@@ -93,15 +255,15 @@ class Bbox(object):
     	taille = c4d.Vector(self.largeur,haut,self.hauteur)
     	res.SetAbsPos(self.centre)
     	return res
-    
+
     @staticmethod
     def fromObj(obj,origine = c4d.Vector()):
         """renvoie la bbox 2d de l'objet"""
         mg = obj.GetMg()
-    
+
         rad = obj.GetRad()
         centre = obj.GetMp()
-        
+
         #4 points de la bbox selon orientation de l'objet
         pts = [ c4d.Vector(centre.x+rad.x,centre.y+rad.y,centre.z+rad.z) * mg,
                 c4d.Vector(centre.x-rad.x,centre.y+rad.y,centre.z+rad.z) * mg,
@@ -111,18 +273,18 @@ class Bbox(object):
                 c4d.Vector(centre.x+rad.x,centre.y+rad.y,centre.z-rad.z) * mg,
                 c4d.Vector(centre.x-rad.x,centre.y+rad.y,centre.z-rad.z) * mg,
                 c4d.Vector(centre.x+rad.x,centre.y-rad.y,centre.z+rad.z) * mg]
-    
+
         mini = c4d.Vector(min([p.x for p in pts]),min([p.y for p in pts]),min([p.z for p in pts])) + origine
         maxi = c4d.Vector(max([p.x for p in pts]),max([p.y for p in pts]),max([p.z for p in pts])) + origine
-    
+
         return Bbox(mini,maxi)
-    
+
     @staticmethod
     def fromView(basedraw,origine = c4d.Vector()):
         dimension = basedraw.GetFrame()
         largeur = dimension["cr"]-dimension["cl"]
         hauteur = dimension["cb"]-dimension["ct"]
-    
+
         mini =  basedraw.SW(c4d.Vector(0,hauteur,0)) + origine
         maxi = basedraw.SW(c4d.Vector(largeur,0,0)) + origine
         return Bbox(mini,maxi)
@@ -319,19 +481,20 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         width,height  = self.getDefinition()
         #url = 'https://elevation.arcgis.com/arcgis/rest/services/WorldElevation/Terrain/ImageServer/exportImage?f=image&bbox={bbox}&format=tiff&bboxSR={bboxSR}&imageSR={imageSR}&size={size}&pixelType=F32&adjustAspectRatio=true'.format(bbox=bbox,bboxSR=sr,imageSR=sr,size=size)
         url = f"""https://elevation.arcgis.com/arcgis/rest/services/WorldElevation/Terrain/ImageServer/exportImage?f=image&bbox={xmin},{ymin},{xmyx},{ymax}&format=tiff&bboxSR={sr}&imageSR={sr}&size={width},{height}&pixelType=F32&adjustAspectRatio=true"""
-        
-        
+        return url
+
+
         print(url)
 
     def import_geotif(self):
         print('import geotif')
-        
+
     def getBbox(self):
         return self.GetFloat(self.ID_XMIN), self.GetFloat(self.ID_YMIN),self.GetFloat(self.ID_XMAX),self.GetFloat(self.ID_YMAX)
-    
+
     def getDefinition(self):
         return self.GetInt32(self.ID_NB_POLYS_LARG), self.GetInt32(self.ID_NB_POLYS_HAUT)
-        
+
 
     def Command(self, id, msg):
 
@@ -399,10 +562,18 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
             self.test_jeton()
 
         if id == self.ID_BTON_REQUEST:
-            self.requete_MNT()
-
+            #elf.requete_MNT()
+            webbrowser.open(self.requete_MNT())
+            
+        #IMPORTER LE GEOTIF
         if id == self.ID_BTON_IMPORT_GEOTIF:
-            self.import_geotif()
+            fn_tif = c4d.storage.LoadDialog()
+            if not fn_tif : return
+            
+            importGeoTif(fn_tif,doc)
+            c4d.EventAdd()
+            
+            
 
 
 
