@@ -58,7 +58,10 @@ def main():
     size = '{0},{1}'.format(larg,haut)
     bboxSR = '2056'
     imageSR = '2056'
-    url = 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox={0}&format=jpg&size={1}&f=image&bboxSR={2}&imageSR={3}'.format(bbox,size,bboxSR,imageSR)
+    url = f'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox={bbox}&format=jpg&size={size}&f=image&bboxSR={bboxSR}&imageSR={imageSR}'#.format(bbox,size,bboxSR,imageSR)
+    url = 'http://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export?bbox={0}&format=jpg&size={1}&f=image&bboxSR={2}&imageSR={3}'.format(bbox,size,bboxSR,imageSR)
+    #url = 'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/export?bbox={0}&format=jpg&size={1}&f=image&bboxSR={2}&imageSR={3}'.format(bbox,size,bboxSR,imageSR)
+    #print(url)
 
     with urllib.request.urlopen(url) as site:
         img = site.read()
