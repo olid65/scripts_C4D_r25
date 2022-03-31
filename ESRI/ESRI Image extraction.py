@@ -262,15 +262,23 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
                          {'name':'Carte rues','url_base':'http://server.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/'},
                         ]
 
+    ID_ORTHO_DISPLAY = 1059233
+    ID_TOPOMAP_DISPLAY = 1059234
+    ID_STREETMAP_DISPLAY = 1059235
+
+    ID_TERRAIN_EXTRACTOR = 1059237 
+
+
     NB_POLY_MAX = 4096 #nombre de poly max en largeur ou hauteur
     #NB_POLY_MAX_SUM = 8000000 #apparemment il y a un nombre total à ne pas dépasser !
 
     ID_GRP_MAIN = 1000
     ID_TXT_TITRE = 1001
     ID_TXT_REMARQUE = 1002
-
+    ID_GRP_RASTER_CHOICE = 1009
     ID_GRP_ETENDUE = 1010
     ID_GRPE_COORD = 1030
+    ID_BTON_DISPLAY = 1031
     ID_XMIN = 1011
     ID_XMAX = 1012
     ID_YMIN = 1013
@@ -280,11 +288,15 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     ID_TXT_YMIN = 1017
     ID_TXT_YMAX = 1018
 
+    
+
     ID_GRP_ETENDUE_BTONS = 1020
     ID_BTON_EMPRISE_VUE_HAUT = 1021
     ID_BTON_EMPRISE_OBJET = 1022
-    ID_BTON_COLLER_COORDONNEES = 1023
+    ID_BTON_COPIER_COORDONNEES = 1023
+    ID_BTON_COLLER_COORDONNEES = 1024
 
+    ID_LST_CHOIX_IMG = 1030
 
     ID_GRP_TAILLE = 1050
     ID_TXT_TAILLE_MAILLE = 1051
@@ -298,18 +310,21 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     ID_NB_POLYS_HAUT = 1058
 
     ID_GRP_BUTTONS = 1070
-    ID_LST_CHOIX_IMG = 1080
+    
     #ID_BTON_TEST_JETON = 1071
     ID_BTON_REQUEST = 1072
-    #ID_BTON_IMPORT_GEOTIF = 1073
+    ID_BTON_ESRI_TERRAIN = 1073
 
 
 
     TXT_TITRE = "Extraction ESRI Images"
     #TXT_REMARQUE = "Pour que l'extraction soit possible vous devez disposer d'un compte ESRI"
+    TXT_TITRE_GRP_CHOIX_IMAGE = "Choix de l'image"
+    TXT_DISPLAY = "Afficher dans la vue de haut"
     TXT_TITRE_GRP_ETENDUE = "Etendue de l'extraction"
     TXT_BTON_EMPRISE_VUE_HAUT = "emprise selon vue de haut"
     TXT_EMPRISE_OBJET = "emprise selon objet sélectionné"
+    TXT_COPIER_COORDONNEES = "copier les valeurs dans le presse papier"
     TXT_COLLER_COORDONNEES = "coller les valeurs du presse papier"
 
     TXT_TITTRE_GRP_TAILLE = f"Taille de l'extraction (max. {NB_POLY_MAX} points de larg et/ou haut"
@@ -325,7 +340,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     TXT_FILE_EXIST = "Il semble que le fichier mage existe déjà, voulez vous continuer ?"
     TXT_DOWNLOAD_PROBLEM = "Problème lors du téléchargement de l'image"
     TXT_FILE_CREATION_PROBLEM = "Problème lors de la création du fichier image"
-    #TXT_BTON_IMPORT_GEOTIF = "importer le geotif"
+    TXT_BTON_ESRI_TERRAIN = "ESRI Extracteur d'image"
 
     MSG_NO_OBJECT = "Il n' y a pas d'objet sélectionné !"
     MSG_NO_CLIPBOARD = "Le presse-papier doit contenir 4 valeurs numériques séparées par des virgules dans cet ordre xmin,xmax,ymin,ymax"
@@ -395,7 +410,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.SetFloat(self.ID_NB_POLYS, self.nb_pts)
 
     def emprise_vue_haut(self):
-
+        doc = c4d.documents.GetActiveDocument()
         if not self.origin :
             c4d.gui.MessageDialog(self.MSG_NO_ORIGIN)
             return
@@ -409,6 +424,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.majCoord(bbox)
 
     def emprise_objet(self):
+        doc = c4d.documents.GetActiveDocument()
         if not self.origin :
             c4d.gui.MessageDialog(self.MSG_NO_ORIGIN)
             return
@@ -426,12 +442,20 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.SetFloat(self.ID_YMIN, bbox.min.z,format = c4d.FORMAT_METER)
         self.SetFloat(self.ID_YMAX, bbox.max.z,format = c4d.FORMAT_METER)
         self.verif_coordonnees()
+    
+    def copier_coordonnees(self):
+        ymax = self.GetFloat(self.ID_XMAX)
+        ymin = self.GetFloat(self.ID_XMIN)
+        xmax = self.GetFloat(self.ID_XMAX)
+        xmin = self.GetFloat(self.ID_XMIN)
+        txt = "{0},{1},{2},{3}".format(xmin,ymin,xmax,ymax)
+        print(txt)
+        c4d.CopyStringToClipboard(txt)
 
     def coller_coordonnees(self):
         bbox = coordFromClipboard()
         if bbox:
             self.majCoord(bbox)
-
         else:
             c4d.gui.MessageDialog(self.MSG_NO_CLIPBOARD)
 
@@ -515,6 +539,18 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
 
 
     def Command(self, id, msg):
+        #AFFICHAGE IMAGE VUE DE HAUT
+        if id == self.ID_BTON_DISPLAY:
+            choix_list = self.GetInt32(self.ID_LST_CHOIX_IMG)
+            #print(self.LIST_WEB_SERVICES(choix_list-1)['url_base'])
+            service = self.LIST_WEB_SERVICES[choix_list-1]['name']
+            if service == 'Orthophoto':
+                c4d.CallCommand(self.ID_ORTHO_DISPLAY)
+            elif service == 'Carte topo':
+                c4d.CallCommand(self.ID_TOPOMAP_DISPLAY)
+            elif service == 'Carte rues':
+                c4d.CallCommand(self.ID_STREETMAP_DISPLAY)
+            
 
         # MODIFICATIONS COORDONNEES
         if id == self.ID_XMIN:
@@ -536,6 +572,10 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
 
         if id == self.ID_BTON_EMPRISE_OBJET:
             self.emprise_objet()
+
+        if id == self.ID_BTON_COPIER_COORDONNEES:
+            self.copier_coordonnees()
+
 
         if id == self.ID_BTON_COLLER_COORDONNEES:
             self.coller_coordonnees()
@@ -580,6 +620,10 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
             #extraction de l'image
             fn_img = self.extract_IMG()
 
+        if id == self.ID_BTON_ESRI_TERRAIN:
+            c4d.CallCommand(self.ID_TERRAIN_EXTRACTOR)
+
+
         return True
 
     def InitValues(self):
@@ -607,8 +651,18 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.GroupBegin(self.ID_GRP_MAIN,flags=c4d.BFH_SCALEFIT, cols=1, rows=4)
         self.GroupBorderSpace(10, 10, 10, 0)
 
-        #self.AddStaticText(self.ID_TXT_REMARQUE,c4d.BFH_LEFT)
-        #self.SetString(self.ID_TXT_REMARQUE, self.TXT_REMARQUE)
+        # DEBUT GROUPE CHOIX IMAGE ET AFFICHAGE
+        self.GroupBegin(self.ID_GRP_RASTER_CHOICE,title = self.TXT_TITRE_GRP_CHOIX_IMAGE,flags=c4d.BFH_SCALEFIT, cols=1, rows=2)
+
+        self.GroupBorderSpace(10, 10, 10, 0)
+        self.GroupBorder(c4d.BORDER_GROUP_IN|c4d.BORDER_WITH_TITLE_BOLD)
+        #choix de l'image
+        self.AddComboBox(self.ID_LST_CHOIX_IMG, flags=c4d.BFH_SCALEFIT, initw=80, inith=0, specialalign=False, allowfiltering=False)
+        for i,service in enumerate(self.LIST_WEB_SERVICES):
+            self.AddChild(self.ID_LST_CHOIX_IMG, i+1, service['name'])
+
+        self.AddButton(self.ID_BTON_DISPLAY, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_DISPLAY)
+        self.GroupEnd()
 
         # DEBUT GROUPE ETENDUE
         self.GroupBegin(self.ID_GRP_ETENDUE,title = self.TXT_TITRE_GRP_ETENDUE,flags=c4d.BFH_SCALEFIT, cols=1, rows=2)
@@ -638,10 +692,11 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.GroupEnd() #FIN GROUPE COORD
 
         #DEBUT GROUPE BOUTONS
-        self.GroupBegin(self.ID_GRP_ETENDUE_BTONS,flags=c4d.BFH_SCALEFIT, groupflags = c4d.BFV_GRIDGROUP_EQUALCOLS|c4d.BFV_GRIDGROUP_EQUALROWS, cols=1, rows=3)
+        self.GroupBegin(self.ID_GRP_ETENDUE_BTONS,flags=c4d.BFH_SCALEFIT, groupflags = c4d.BFV_GRIDGROUP_EQUALCOLS|c4d.BFV_GRIDGROUP_EQUALROWS, cols=1, rows=4)
         self.GroupBorderSpace(10, 10, 10, 10)
         self.AddButton(self.ID_BTON_EMPRISE_VUE_HAUT, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_EMPRISE_VUE_HAUT)
         self.AddButton(self.ID_BTON_EMPRISE_OBJET, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_EMPRISE_OBJET)
+        self.AddButton(self.ID_BTON_COPIER_COORDONNEES, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_COPIER_COORDONNEES)
         self.AddButton(self.ID_BTON_COLLER_COORDONNEES, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_COLLER_COORDONNEES)
 
         self.GroupEnd() #FIN GROUPE BOUTONS
@@ -685,20 +740,13 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         # FIN GROUPE TAILLE
 
         # DEBUT GROUPE BOUTONS
-        self.GroupBegin(self.ID_GRP_TAILLE,title = self.TXT_TITTRE_GRP_TAILLE,flags=c4d.BFH_SCALEFIT, cols=1, rows=2)
+        self.GroupBegin(self.ID_GRP_TAILLE,title = self.TXT_TITTRE_GRP_TAILLE,flags=c4d.BFH_SCALEFIT, cols=1, rows=1)
         self.GroupBorderSpace(10, 10, 10, 10)
-
-        #choix de l'image
-        self.AddComboBox(self.ID_LST_CHOIX_IMG, flags=c4d.BFH_SCALEFIT, initw=80, inith=0, specialalign=False, allowfiltering=False)
-        for i,service in enumerate(self.LIST_WEB_SERVICES):
-            self.AddChild(self.ID_LST_CHOIX_IMG, i+1, service['name'])
-
-
 
         self.bton_request = self.AddButton(self.ID_BTON_REQUEST, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_REQUEST)
         #self.Enable(self.bton_request,False)
 
-        #self.AddButton(self.ID_BTON_IMPORT_GEOTIF, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_IMPORT_GEOTIF)
+        self.AddButton(self.ID_BTON_ESRI_TERRAIN, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_ESRI_TERRAIN)
 
         self.GroupEnd()
         # FIN GROUPE BOUTONS
@@ -707,13 +755,13 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
 
         return True
 
-
-
 # Main function
 def main():
-    gui.MessageDialog('Hello World!')
+    global dlg
+    doc = c4d.documents.GetActiveDocument()
+    dlg = EsriWorldTerrainDlg(doc)
+    dlg.Open(c4d.DLG_TYPE_ASYNC)
 
 # Execute main()
 if __name__=='__main__':
-    dlg = EsriWorldTerrainDlg(doc)
-    dlg.Open(c4d.DLG_TYPE_ASYNC)
+    main()

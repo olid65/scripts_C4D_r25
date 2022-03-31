@@ -25,8 +25,6 @@ def groupByLayer(lst_obj, doc,parent = None):
             o.InsertUnder(nullo)
         doc.InsertObject(nullo,parent = parent, pred = pred)
         pred = nullo
-        
-        
 
 # Main function
 def main():

@@ -300,7 +300,7 @@ def coordFromClipboard():
 
     try :
         res = [float(s) for s in clipboard.split(',')]
-        xmin,xmax,ymin,ymax = res
+        xmin,ymin,xmax,ymax = res
     except :
         return None
 
@@ -311,6 +311,8 @@ def coordFromClipboard():
 #####################################################################################
 
 class EsriWorldTerrainDlg (c4d.gui.GeDialog):
+
+    ID_IMAGE_EXTRACTOR = 1059238
 
     NB_POLY_MAX = 5000 #nombre de poly max en largeur ou hauteur
     NB_POLY_MAX_SUM = 8000000 #apparemment il y a un nombre total à ne pas dépasser !
@@ -333,7 +335,8 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     ID_GRP_ETENDUE_BTONS = 1020
     ID_BTON_EMPRISE_VUE_HAUT = 1021
     ID_BTON_EMPRISE_OBJET = 1022
-    ID_BTON_COLLER_COORDONNEES = 1023
+    ID_BTON_COPIER_COORDONNEES = 1023
+    ID_BTON_COLLER_COORDONNEES = 1024
 
 
     ID_GRP_TAILLE = 1050
@@ -351,6 +354,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     ID_BTON_TEST_JETON = 1071
     ID_BTON_REQUEST = 1072
     ID_BTON_IMPORT_GEOTIF = 1073
+    ID_BTON_ESRI_IMAGE = 1074
 
 
 
@@ -359,6 +363,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     TXT_TITRE_GRP_ETENDUE = "Etendue de l'extraction"
     TXT_BTON_EMPRISE_VUE_HAUT = "emprise selon vue de haut"
     TXT_EMPRISE_OBJET = "emprise selon objet sélectionné"
+    TXT_COPIER_COORDONNEES = "copier les valeurs dans le presse papier"
     TXT_COLLER_COORDONNEES = "coller les valeurs du presse papier"
 
     TXT_TITTRE_GRP_TAILLE = f"Taille/définition de l'extraction (max. {NB_POLY_MAX} points larg/haut ou max {round(NB_POLY_MAX_SUM/1000000,1)} Mio de points en tout)"
@@ -371,6 +376,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
     TXT_BTON_TEST_JETON = "tester la validité du jeton"
     TXT_BTON_REQUEST = "lancer la requête"
     TXT_BTON_IMPORT_GEOTIF = "importer le geotif"
+    TXT_BTON_ESRI_IMAGE = "ESRI Extracteur d'images"
 
     MSG_NO_OBJECT = "Il n' y a pas d'objet sélectionné !"
     MSG_NO_CLIPBOARD = "Le presse-papier doit contenir 4 valeurs numériques séparées par des virgules dans cet ordre xmin,xmax,ymin,ymax"
@@ -449,7 +455,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.SetFloat(self.ID_NB_POLYS, self.nb_pts)
 
     def emprise_vue_haut(self):
-
+        doc = c4d.documents.GetActiveDocument()
         if not self.origin :
             c4d.gui.MessageDialog(self.MSG_NO_ORIGIN)
             return
@@ -463,6 +469,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.majCoord(bbox)
 
     def emprise_objet(self):
+        doc = c4d.documents.GetActiveDocument()
         if not self.origin :
             c4d.gui.MessageDialog(self.MSG_NO_ORIGIN)
             return
@@ -480,6 +487,15 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.SetFloat(self.ID_YMIN, bbox.min.z,format = c4d.FORMAT_METER)
         self.SetFloat(self.ID_YMAX, bbox.max.z,format = c4d.FORMAT_METER)
         self.verif_coordonnees()
+    
+    def copier_coordonnees(self):
+        ymax = self.GetFloat(self.ID_YMAX)
+        ymin = self.GetFloat(self.ID_YMIN)
+        xmax = self.GetFloat(self.ID_XMAX)
+        xmin = self.GetFloat(self.ID_XMIN)
+        txt = "{0},{1},{2},{3}".format(xmin,ymin,xmax,ymax)
+        print(txt)
+        c4d.CopyStringToClipboard(txt)
 
     def coller_coordonnees(self):
         bbox = coordFromClipboard()
@@ -535,6 +551,9 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
 
         if id == self.ID_BTON_EMPRISE_OBJET:
             self.emprise_objet()
+        
+        if id == self.ID_BTON_COPIER_COORDONNEES:
+            self.copier_coordonnees()
 
         if id == self.ID_BTON_COLLER_COORDONNEES:
             self.coller_coordonnees()
@@ -586,12 +605,13 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         if id == self.ID_BTON_IMPORT_GEOTIF:
             fn_tif = c4d.storage.LoadDialog()
             if not fn_tif : return
-
+            doc = c4d.documents.GetActiveDocument()
             importGeoTif(fn_tif,doc)
             c4d.EventAdd()
 
-
-
+        # ESRI IMAGE EXTRACTOR
+        if id == self.ID_BTON_ESRI_IMAGE:
+            c4d.CallCommand(self.ID_IMAGE_EXTRACTOR)
 
 
         return True
@@ -648,10 +668,11 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         self.GroupEnd() #FIN GROUPE COORD
 
         #DEBUT GROUPE BOUTONS
-        self.GroupBegin(self.ID_GRP_ETENDUE_BTONS,flags=c4d.BFH_SCALEFIT, groupflags = c4d.BFV_GRIDGROUP_EQUALCOLS|c4d.BFV_GRIDGROUP_EQUALROWS, cols=1, rows=3)
+        self.GroupBegin(self.ID_GRP_ETENDUE_BTONS,flags=c4d.BFH_SCALEFIT, groupflags = c4d.BFV_GRIDGROUP_EQUALCOLS|c4d.BFV_GRIDGROUP_EQUALROWS, cols=1, rows=4)
         self.GroupBorderSpace(10, 10, 10, 10)
         self.AddButton(self.ID_BTON_EMPRISE_VUE_HAUT, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_EMPRISE_VUE_HAUT)
         self.AddButton(self.ID_BTON_EMPRISE_OBJET, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_EMPRISE_OBJET)
+        self.AddButton(self.ID_BTON_COPIER_COORDONNEES, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_COPIER_COORDONNEES)
         self.AddButton(self.ID_BTON_COLLER_COORDONNEES, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_COLLER_COORDONNEES)
 
         self.GroupEnd() #FIN GROUPE BOUTONS
@@ -695,7 +716,7 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         # FIN GROUPE TAILLE
 
         # DEBUT GROUPE BOUTONS
-        self.GroupBegin(self.ID_GRP_TAILLE,title = self.TXT_TITTRE_GRP_TAILLE,flags=c4d.BFH_SCALEFIT, cols=1, rows=3)
+        self.GroupBegin(self.ID_GRP_TAILLE,title = self.TXT_TITTRE_GRP_TAILLE,flags=c4d.BFH_SCALEFIT, cols=1, rows=4)
         self.GroupBorderSpace(10, 10, 10, 10)
 
         self.AddButton(self.ID_BTON_TEST_JETON, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_TEST_JETON)
@@ -703,6 +724,8 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
         #self.Enable(self.bton_request,False)
 
         self.AddButton(self.ID_BTON_IMPORT_GEOTIF, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_IMPORT_GEOTIF)
+
+        self.AddButton(self.ID_BTON_ESRI_IMAGE, flags=c4d.BFH_SCALEFIT, initw=0, inith=0, name=self.TXT_BTON_ESRI_IMAGE)
 
         self.GroupEnd()
         # FIN GROUPE BOUTONS
@@ -715,9 +738,11 @@ class EsriWorldTerrainDlg (c4d.gui.GeDialog):
 
 # Main function
 def main():
-    gui.MessageDialog('Hello World!')
+    global dlg
+    doc = c4d.documents.GetActiveDocument()
+    dlg = EsriWorldTerrainDlg(doc)
+    dlg.Open(c4d.DLG_TYPE_ASYNC)
 
 # Execute main()
 if __name__=='__main__':
-    dlg = EsriWorldTerrainDlg(doc)
-    dlg.Open(c4d.DLG_TYPE_ASYNC)
+    main()
