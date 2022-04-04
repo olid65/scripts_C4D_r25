@@ -80,6 +80,10 @@ def display_wms_swisstopo(layer):
 
 
     mini,maxi,width_img,height_img = empriseVueHaut(bd,origine)
+    #print(width_img,height_img)
+    #width_img*=8
+    #height_img*=8
+    print(width_img,height_img)
 
     bbox = f'{mini.x},{mini.z},{maxi.x},{maxi.z}'
 

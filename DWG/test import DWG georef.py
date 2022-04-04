@@ -23,9 +23,9 @@ ALERT_SIZE_FN = 10 #taille pour alerter si un document est trop gros en Mo
 
 
 def import_DWG_georef(fn,doc):
-    
+
     if not fn : return False
-    
+
     #le doc doit être en mètres
     usdata = doc[c4d.DOCUMENT_DOCUNIT]
     scale, unit = usdata.GetUnitScale()
@@ -91,7 +91,7 @@ def import_DWG_georef(fn,doc):
                 return
             print(scale_factor)
         pos = pos*scale_factor
-        
+
         if not origine:
             doc[CONTAINER_ORIGIN] = c4d.Vector(pos.x,0,pos.z)
             print(pos)
@@ -111,7 +111,7 @@ def import_DWG_georef(fn,doc):
     #suppression de l'objet source
     obj_parent.Remove()
     c4d.EventAdd()
-    
+
 
 
 #Emprise des coordonnées
@@ -120,13 +120,37 @@ CH_XMIN, CH_YMIN, CH_XMAX, CH_YMAX = 1988000.00, 87000.00, 2906900.00, 1421600.0
 
 # Main function
 def main():
+
+    #remise par défaut des options d'importation DWG
+    #j'ai eu quelques soucis sur un fichier qund les options étaient en mètre -> à investiguer
+    plug = c4d.plugins.FindPlugin(c4d.FORMAT_DWG_IMPORT, c4d.PLUGINTYPE_SCENELOADER)
+    if plug is None:
+        print ("pas de module d'import DWG")
+        return 
+    op = {}
+    if plug.Message(c4d.MSG_RETRIEVEPRIVATEDATA, op):
+        
+        import_data = op.get("imexporter",None)
+        if not import_data:
+            print ("pas de data pour l'import 3Ds")
+            return
+        
+        # Change 3DS import settings
+        scale = import_data[c4d.DWGFILTER_SCALE]
+        scale.SetUnitScale(1,c4d.DOCUMENT_UNIT_CM)
+        import_data[c4d.DWGFILTER_SCALE] = scale
+        import_data[c4d.DWGFILTER_CURVE_SUBDIVISION_FACTOR] = 24
+        import_data[c4d.DWGFILTER_KEEP_IGES] = False
+        
+    c4d.EventAdd()
+    return
     doc = c4d.documents.GetActiveDocument()
     fn = c4d.storage.LoadDialog()
     import_DWG_georef(fn,doc)
     return
-    
-    
-    
+
+
+
     #le doc doit être en mètres
     doc = c4d.documents.GetActiveDocument()
 
