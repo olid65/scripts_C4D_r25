@@ -18,16 +18,20 @@ PREFIXE_DENSITE = 'dens'
 PREFIXE_LARGEUR = 'larg' #(largeur de cordon)
 
 #dans re le ? sert à dire que le caractère qui précède est facultatif
-CATEGORIES = [r'arbres?',
-              r'arbres?-surfaces?',
-              r'arbres?-alignements?',
-              r'arbres?-cordons?',
-              r'constructions?']
+CATEGORIES = [r'arbres?']
+# r'arbres?-surfaces?',
+# r'arbres?-alignements?',
+# r'arbres?-cordons?']
 
 DELTA_ALT = 100
 
-HAUT_MIN_DEFAULT = 15
-HAUT_MAX_DEFAULT = 20
+HAUT_MIN_DEFAULT = 10
+HAUT_MAX_DEFAULT = 15
+
+#le fichier doit être dans le même répertoire
+NAME_FN_ARBRES_SOURCES = '__arbres_sources__.c4d'
+
+
 
 # localimport-v1.7.3-blob-mcw79
 import base64 as b, types as t, zlib as z; m=t.ModuleType('localimport');
@@ -140,11 +144,12 @@ def arbres_isoles(parent,mnt):
     #polyo.SetAllPoints(pts)
     #polyo.Message(c4d.MSG_UPDATE)
     #calcul des altitudes
-    pts = lstPointsOnSurface(pts,mnt)
+    if mnt:
+        pts = lstPointsOnSurface(pts,mnt)
 #
     #res = c4d.BaseObject(c4d.Onull)
     #polyo.InsertUnder(res)
-    return pts, [rayon*2 for p,rayon in lst]
+    return pts, [diam for p,diam in lst]
 
 
 #ATTENTION avec l'extraction des arbres on a des swissalti3D_extrait pour les arbres'
@@ -181,91 +186,86 @@ def getInfoFromLyrName(lyr_name):
             largeurs = r
     return hauteurs,distances,densites,largeurs
 
-
-
-
-# Main function
-def main():
-    #lyr_name = 'arbres-cordon_baliveaux_existants_h12-15'
-    #lyr_name = 'arbres_baliveaux_existants_h12-15m'
-    #lyr_name = 'ARBRES-surface_baliveaux_existants_h12m-15m_dist5-12'
-    #lyr_name = 'arbres_baliveaux_existants_h12m'
-    
-    mnt = getMNT(doc,obj = doc.GetFirstObject())
-    if not mnt:
-        print('Pas de MNT')
-        return
-
+def generateTrees(op,mnt):
+    #extraction des points et diamètre
     pts,diametres = arbres_isoles(op,mnt)
+
+    if not pts:
+        c4d.gui.MessageDialog("Pas d'arbre trouvé !")
+        return False
 
     #calcul des hauteurs
     hauteurs_ref,*rest = getInfoFromLyrName(op.GetName())
-    
+    #print(hauteurs_ref)
+
+    #sinon valeurs par défafut
+    if not hauteurs_ref:
+        haut_min = HAUT_MIN_DEFAULT
+        haut_max = HAUT_MAX_DEFAULT
     #si on a récupéré 2 hauteurs
-    if len(hauteurs_ref ==2):
-        haut_min,haut_namx = hauteurs
+    elif len(hauteurs_ref) ==2:
+        haut_min,haut_max = hauteurs_ref
     #une hauteur
-    if len(hauteurs_ref ==1):
-        haut_min = hauteurs[0]
-        haut_namx = hauteurs[0]
-        
+    elif len(hauteurs_ref)==1:
+        haut_min = hauteurs_ref[0]
+        haut_max = hauteurs_ref[0]
+
     #sinon valeurs par défafut
     else:
         haut_min = HAUT_MIN_DEFAULT
-        haut_namx = HAUT_MAX_DEFAULT
-        
-    returns
-    
-    
-        
+        haut_max = HAUT_MAX_DEFAULT
 
-    for o in op.GetChildren():
-        lyr_name = o.GetName()
+    delta_h = haut_max-haut_min
 
-        #extraction du type
-        typ = None
-        for cat in CATEGORIES:
-            regex = re.compile(cat, re.IGNORECASE)
-            if re.match(regex,lyr_name):
-                typ = cat.replace('s?','')
+    if delta_h ==0:
+        hauteurs = [ haut_min for i in range(len(pts))]
 
-        #si on a un des types on extrait les données éventuelles
-        if typ:
-            print(typ)
-            hauteurs = None
-            distances = None
-            densites = None
-            largeurs = None
+    else:
+        hauteurs = [ round((random()*delta_h + haut_min),2) for i in range(len(pts))]
 
-            for txt in  lyr_name.split('_')[1:]:
-                r = getInfo(txt,PREFIXE_HAUTEUR)
-                if r :
-                    hauteurs = r
-                r = getInfo(txt,PREFIXE_DIST)
-                if r :
-                    distances = r
-                r = getInfo(txt,PREFIXE_DENSITE)
-                if r :
-                    densites = r
-                r = getInfo(txt,PREFIXE_LARGEUR)
-                if r :
-                    largeurs = r
+    #arbres sources
+    fn_arbres_sources = os.path.join(os.path.dirname(__file__),NAME_FN_ARBRES_SOURCES)
+    doc_arbres = c4d.documents.LoadDocument(fn_arbres_sources, c4d.SCENEFILTER_OBJECTS)
+    srce_veget = doc_arbres.SearchObject('sources_vegetation')
+    if not srce_veget:
+        c4d.gui.MessageDialog(f"Le fichier{NAME_FN_ARBRES_SOURCES} n'a pas été trouvé ou il ne contient pas les un neutre 'sources_vegetation'\n\n Vous devrez mettre vous même des arbres en enfant du cloneur")
 
     with localimport('/Users/olivierdonze/Library/Preferences/Maxon/Maxon Cinema 4D R25_EBA43BEE/plugins/SITG_C4D/libs') as importer:
         importer.disable(['importArbresShapePoint'])
         import importArbresShapePoint as arbres
+        doc.StartUndo()
+        arbres.create_mograph_cloner(doc, pts, hauteurs, diametres, srce_veget, centre=None, name=op.GetName())
+        doc.EndUndo()
 
-        #create_mograph_cloner(doc, points, hauteurs, diametres, objs_srces, centre=None, name=None)
+    c4d.EventAdd()
 
-        print(arbres.create_mograph_cloner)
 
+# Main function
+def main(doc,op):
+    mnt = getMNT(doc,obj = doc.GetFirstObject())
+    if not mnt or not mnt.CheckType(c4d.Opolygon):
+        mnt = None
+
+    for o in op.GetChildren():
+        typ = None
+        name = o.GetName()
+        for cat in CATEGORIES:
+            regex = re.compile(cat, re.IGNORECASE)
+            if re.match(regex,name):
+                typ = cat.replace('s?','')
+        if typ == 'arbre':
+            generateTrees(o,mnt)
 
     return
-
+    #exemples de noms de calques (pour l'instant seul arbre fonctionne)
+    #lyr_name = 'arbres-cordon_baliveaux_existants_h12-15'
+    #lyr_name = 'arbres_baliveaux_existants_h12-15m'
+    #lyr_name = 'ARBRES-surface_baliveaux_existants_h12m-15m_dist5-12'
+    #lyr_name = 'arbres_baliveaux_existants_h12m'
 
 
 
 
 # Execute main()
 if __name__=='__main__':
-    main()
+    main(doc,op)
