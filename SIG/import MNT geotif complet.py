@@ -156,7 +156,7 @@ def importGeoTif(fn_tif,doc):
 
             i+=1
 
-        pos.x = 0
+        pos.x = val_px_x/2
         pos.z-= val_px_y
 
     poly.SetAllPoints(pts)

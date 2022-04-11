@@ -96,7 +96,22 @@ def multipolygon(coord):
     return res
 
 def linestring(coord):
-    pass
+    pts = [lst2vec(p) for p in coord]
+
+
+    #on calcule le centre des points
+    # et on translate tous les points
+    centre = get_centre(pts)
+    pts = list(map(lambda v: v-centre, pts))
+    pcnt = len(pts)
+    #scnt = len(seg)
+    res = c4d.SplineObject(pcnt,c4d.SPLINETYPE_LINEAR)
+    res[c4d.SPLINEOBJECT_CLOSED] = False
+    res.SetAllPoints(pts)
+    res.SetAbsPos(centre)
+    res.Message(c4d.MSG_UPDATE)
+
+    return res
 
 def multilinestring(coord):
     pass
@@ -113,7 +128,8 @@ dico_func = {
 # Main function
 def main():
     fn = '/Users/olivierdonze/Documents/TEMP/geojson/export_splines.geojson'
-    fn = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Trient2/swisstopo/swissalti3d_2m_courbes10m.geojson'
+    fn = '/Users/olivierdonze/Documents/TEMP/Martigny_Combe/mnt_esri_test_courbes_poly_5m.geojson'
+    fn = c4d.storage.LoadDialog()
     res = c4d.BaseObject(c4d.Onull)
     res.SetName(os.path.basename(fn))
     origine = doc[CONTAINER_ORIGIN]
