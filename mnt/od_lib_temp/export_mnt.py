@@ -8,9 +8,21 @@ CONTAINER_ORIGIN =1026473
 #TODO : si on a des nodata compléter le grille !
 #TODO : gérer les maille non carrées quand dim_cell_x != dim_cell_z
 
+def tri_pts_sens_mnt(op,origin):
+    mg = op.GetMg()
+    #on inverse le z pour que ce soit dans le sens mnt !
+    vec2tuple = lambda v : (-v.z,v.x,v.y)
+    pts_temp = [vec2tuple(p*mg) for p in op.GetAllPoints()]
+    pts_temp.sort()
+    
+    tuple2vec = lambda z,x,y : c4d.Vector(x,y,-z)
+    pts = [tuple2vec(z,x,y)+origin for z,x,y in pts_temp]
+    return pts
+
 def export_mnt_ascii(mnt,fn_dst,origin):
-    mg = mnt.GetMg()
-    pts = [p*mg+origin for p in mnt.GetAllPoints()]
+    #mg = mnt.GetMg()
+    pts= tri_pts_sens_mnt(mnt,origin)
+    #pts = [p*mg+origin for p in mnt.GetAllPoints()]
 
     #dimension cellule en x
     dim_cell_x = pts[1].x - pts[0].x
@@ -47,7 +59,7 @@ def export_mnt_ascii(mnt,fn_dst,origin):
     xllcorner = pts[0].x - dim_cell_x/2
     yllcorner = pts[nb_pts-1].z + dim_cell_z/2
 
-    print(xllcorner,yllcorner)
+    #print(xllcorner,yllcorner)
 
 
 
@@ -81,7 +93,7 @@ def main():
     #fn_dst = '/Users/olivierdonze/Documents/TEMP/Chatelard/swisstopo/test_mnt_asci.asc'
     fn_dst = c4d.storage.LoadDialog(title='', flags=c4d.FILESELECT_SAVE, force_suffix='asc')
 
-    print(fn_dst)
+    #print(fn_dst)
 
     if not fn_dst : return
     origin = doc[CONTAINER_ORIGIN]

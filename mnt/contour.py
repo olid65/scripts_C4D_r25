@@ -59,20 +59,34 @@ CONTAINER_ORIGIN = 1026473
 
 TXT_NO_SELECTION = "Il n'y a pas de terrain sélectionné opération impossible"
 
+TXT_NOT_SAVED = "Le document doit être enregistré pour pouvoir générer différents fichiers, vous pourrez le faire à la prochaine étape\nVoulez-vous continuer ?"
+TXT_DOC_NOT_IN_METERS = "Les unités du document ne sont pas en mètres, si vous continuez les unités seront modifiées.\nVoulez-vous continuer ?"
+TXT_NAS_HEPIA = "Votre document est enregistré sur le NAS (hes-nas-prairie.hes.adhes.hesge.ch).\nEnregistrez le projet et les ressources utilisées sur un autre disque (disque dur externe, Partage, ou dossier à votre nom à la racine de C:)"
+TXT_PATH_CAR_SPECIAL = "Le chemin de fichier continet un ou plusieurs caractères spéciaux (accents,cédille,...) \nImport impossible !"
+
 class DlgContoursMNT(c4d.gui.GeDialog):
 
     MARGIN = 5
 
-    ID_TXT_EQUIDIST = 999
-    ID_EQUIDIST = 1000
-    ID_CBOX_POLYGON = 1001
-    ID_CBOX_3D = 1002
-    ID_BTON_GENERATE_CONTOUR = 1010
+    ID_TXT_EQUIDIST = 1000
+    ID_EQUIDIST = 1001
+    ID_NB_CONTOUR = 1003
+
+
+    ID_CBOX_POLYGON = 1010
+    ID_CBOX_3D = 1011
+    ID_CBOX_DXF =1012
+
+    ID_BTON_GENERATE_CONTOUR = 1020
+
 
     TXT_EQUIDIST = 'Equidiatance des courbes :'
     LABEL_CBOX_POLYGON = 'Générer des polygones fermés'
     LABEL_CBOX_3D = 'Courbes 3D'
+    LABEL_CBOX_DXF = 'Exporter un fichier dxf'
+
     LABEL_GENERATE_CONTOUR = 'Générer les courbes de niveau'
+
 
 
 
@@ -89,11 +103,15 @@ class DlgContoursMNT(c4d.gui.GeDialog):
         #Equidistance
         self.AddStaticText(self.ID_TXT_EQUIDIST, name=self.TXT_EQUIDIST, flags=c4d.BFH_MASK, initw=200)
         self.AddEditSlider(self.ID_EQUIDIST, flags=c4d.BFH_MASK, initw=50, inith=20)
+        self.AddStaticText(self.ID_NB_CONTOUR,flags=c4d.BFH_MASK, initw=50, inith=20, name='Nombre de courbes', borderstyle=0)
 
         #polygone fermé
         self.AddCheckbox(self.ID_CBOX_POLYGON, flags=c4d.BFH_MASK, initw=300, inith=20, name = self.LABEL_CBOX_POLYGON)
         #3D
         self.AddCheckbox(self.ID_CBOX_3D, flags=c4d.BFH_MASK, initw=300, inith=20, name = self.LABEL_CBOX_3D)
+
+        #DXF
+        self.AddCheckbox(self.ID_CBOX_DXF, flags=c4d.BFH_MASK, initw=300, inith=20, name = self.LABEL_CBOX_DXF)
 
         #bouton
         self.AddButton(self.ID_BTON_GENERATE_CONTOUR, flags=c4d.BFH_MASK, initw=300, inith=30, name=self.LABEL_GENERATE_CONTOUR)
@@ -107,23 +125,64 @@ class DlgContoursMNT(c4d.gui.GeDialog):
 
         self.SetFloat(self.ID_EQUIDIST,1.0,min=0.1, max=100, step=1.0, format=c4d.FORMAT_METER, min2=0.1, max2=100.0, quadscale=True, tristate=False)
         #self.SetMeter(self.ID_EQUIDIST, 1.0)
-        self.SetBool(self.ID_CBOX_POLYGON,True)
+        self.SetBool(self.ID_CBOX_POLYGON,False)
         self.SetBool(self.ID_CBOX_3D,True)
+        self.SetBool(self.ID_CBOX_DXF,True)
+
+        self.maj_nb_courbes()
+
         return True
 
+    def maj_nb_courbes(self):
+        nb_courbes = int(round(self.mnt.GetRad().y *2/ self.GetFloat(self.ID_EQUIDIST)))
+        self.SetString(self.ID_NB_CONTOUR, f'soit env. {nb_courbes} courbes')
+
+
     def Command(self, id, msg):
+        if id== self.ID_EQUIDIST:
+            self.maj_nb_courbes()
         # Choix du lieu
         if id == self.ID_BTON_GENERATE_CONTOUR:
+            path_doc = doc.GetDocumentPath()
+
+            while not path_doc:
+                rep = c4d.gui.QuestionDialog(TXT_NOT_SAVED)
+                if not rep : return True
+                c4d.documents.SaveDocument(doc, "", c4d.SAVEDOCUMENTFLAGS_DIALOGSALLOWED, c4d.FORMAT_C4DEXPORT)
+                c4d.CallCommand(12098) # Enregistrer le projet
+                path_doc = doc.GetDocumentPath()
+
+            #Vérification qu'on n'est pas sur le NAS de l'école
+            if 'hes-nas-prairie.hes.adhes.hesge.ch' in path_doc:
+                c4d.gui.MessageDialog(TXT_NAS_HEPIA)
+                return True
+
+            #Vérification qu'il n'y ait pas de caractères spéciaux dans le chemin !
+            #GDAL ne supporte pas
+            try :
+                path_doc.encode(encoding='ASCII')
+            except:
+                c4d.gui.MessageDialog(TXT_PATH_CAR_SPECIAL)
+                return True
+
             with localimport(os.path.dirname(__file__)) as importer:
+
+                #EXPORT DU MNT EN ASCII
                 importer.disable(['export_mnt'])
                 from od_lib_temp import export_mnt
-                fn_mnt = f'/Users/olivierdonze/Documents/TEMP/test_contour/{self.mnt.GetName()}.asc'
+                fn_mnt = os.path.join(path_doc,f'{self.mnt.GetName()}.asc')
                 origin = self.doc[CONTAINER_ORIGIN]
+
+                #si on n'a pas d'origin on met à zéro, pour une utilisation hors doc géoréf
+                if not origin :
+                    origin = c4d.Vector(0)
+                    self.doc[CONTAINER_ORIGIN] = origin
                 export_mnt.export_mnt_ascii(self.mnt,fn_mnt,origin)
 
+                #EXTRACTION DES COURBES
                 importer.disable(['gdal_c4d'])
                 from od_lib_temp import gdal_c4d
-                
+
                 equidist = self.GetFloat(self.ID_EQUIDIST)
                 geom3D = self.GetBool(self.ID_CBOX_3D)
                 polygon = self.GetBool(self.ID_CBOX_POLYGON)
@@ -132,15 +191,32 @@ class DlgContoursMNT(c4d.gui.GeDialog):
                 if round(equidist*100)%100:
                     txt_equidist = f'{round(equidist*100)}cm'
                 else:
-                    txt_equidist = f'{round(equidist)}m' 
+                    txt_equidist = f'{round(equidist)}m'
 
                 #TODO attention au nom gdal est très sensible !
-                fn_curves = f'/Users/olivierdonze/Documents/TEMP/test_contour/{self.mnt.GetName()}_courbes_{txt_equidist}.geojson'
+                fn_curves = os.path.join(path_doc,f'{self.mnt.GetName()}_courbes_{txt_equidist}.geojson')
                 gdal_c4d.gdal_contour(fn_mnt,polygon = polygon, fn_curves = fn_curves, equidist=equidist, geom3D =geom3D, form = 'GeoJSON')
-                
+
                 importer.disable(['geojson2spline'])
                 from od_lib_temp import geojson2spline
                 geojson2spline.main(fn_curves,doc)
+
+                #DXF
+                if self.GetBool(self.ID_CBOX_DXF):
+                    try:
+                        outfile = fn_curves.replace('.geojson','.dxf')
+                        gdal_c4d.ogr2ogr(fn_curves,outfile)
+                    except:
+                        c4d.gui.MessageDialog("Problème lors de la génération du DXF")
+
+                #TEST SIMPLIFICATION DES COURBES
+                #ATTENTION J'AI REUSSI A LE FAIRE FONCTIONNER SEULEMENT A PARTIR D?UN SHAPE (ne fonctionne pas avec geojson !!!)
+                # fact_simpl = 5
+                # fn_shp = fn_curves.replace('.geojson','.shp')
+                # gdal_c4d.gdal_contour(fn_mnt,polygon = polygon, fn_curves = fn_shp, equidist=equidist, geom3D =geom3D, form = 'ESRI shapefile')
+                # fn_curves_simpl = fn_curves[:-len('.geojson')]+f'_simpl_{fact_simpl}.shp'
+                # gdal_c4d.ogr2ogr(fn_shp,fn_curves_simpl,fact_simpl)
+
 
 
             self.Close()
@@ -182,10 +258,10 @@ def main():
     ###terrain terrasses
     ###terrain terrassse imprimable (mailleur)
     #générer une texture et la plaquer sur le terrain ?
-    
 
 
-    
+
+
     #exportation du mnt en asci
     #éventuellement simplifier le mnt ? -> pour faire un premier lissage
 

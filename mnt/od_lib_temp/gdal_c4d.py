@@ -53,6 +53,27 @@ def gdalBIN_OK(path_to_QGIS_bin, exe = 'gdal_translate'):
         return False
 
 
+def ogr2ogr(infile,outfile, simplify_tolerance = None):
+    """l'extension sert à définir le format"""
+    #ogr2ogr -f DXF "E:\OD\TEMP\test_courbes\Landscape_courbes_1m.dxf" "E:\OD\TEMP\test_courbes\Landscape_courbes_1m.geojson"
+    #ogr2ogr -f GeoJSON -t_srs EPSG:5070 [outFile.geojson] [inFile.shp] 
+    qgispath = getPathToQGISbin()
+    if not qgispath:
+        c4d.gui.MessageDialog(TXT_NO_PATH_TO_QGIS)
+        return False
+    pth_ogr2ogr = os.path.join(qgispath,'ogr2ogr')
+    if not os.path.isfile(pth_ogr2ogr) and not os.path.isfile(pth_ogr2ogr+'.exe'):
+        c4d.gui.MessageDialog(f"Pas de fichier ogr2ogr : {pth_ogr2ogr}")
+        return False
+    simpl = ''
+    if simplify_tolerance:
+        simpl = f'-simplify {simplify_tolerance}'
+
+    req = f'''"{pth_ogr2ogr}" -a_srs EPSG:2056 {simpl} "{outfile}" "{infile}" '''
+    #print(req)
+    output = subprocess.check_output(req,shell=True)
+
+
 
 def gdal_contour(fn_mnt,polygon = True, fn_curves = None, equidist=1, geom3D =True, form = 'GeoJSON'):
     qgispath = getPathToQGISbin()
@@ -60,7 +81,7 @@ def gdal_contour(fn_mnt,polygon = True, fn_curves = None, equidist=1, geom3D =Tr
         c4d.gui.MessageDialog(TXT_NO_PATH_TO_QGIS)
         return False
     pth_gdal_contour = os.path.join(qgispath,'gdal_contour')
-    if not os.path.isfile(pth_gdal_contour):
+    if not os.path.isfile(pth_gdal_contour) and not os.path.isfile(pth_gdal_contour+'.exe'):
         c4d.gui.MessageDialog(f"Pas de fichier gdal_contour : {pth_gdal_contour}")
         return False
     #si le fichier de det n'est pas renseigné on fait un nom automatique
@@ -82,8 +103,8 @@ def gdal_contour(fn_mnt,polygon = True, fn_curves = None, equidist=1, geom3D =Tr
         p = ''
 
 
-    req = f"""{pth_gdal_contour} {p} -amax ELEV_MAX -amin ELEV_MIN -b 1 -i {equidist} {g3D} -f "{form}" {fn_mnt} {fn_curves}"""
-    print(req)
+    req = f'''"{pth_gdal_contour}" {p} -amax ELEV_MAX -amin ELEV_MIN -b 1 -i {equidist} {g3D} -f "{form}" {fn_mnt} {fn_curves}'''
+    #print(req)
     output = subprocess.check_output(req,shell=True)
 
 # Main function
