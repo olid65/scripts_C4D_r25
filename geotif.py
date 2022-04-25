@@ -120,7 +120,7 @@ def main():
     fn = '/Users/olivierdonze/Downloads/exportImage(2).tiff'
     fn = '/Users/olivierdonze/Downloads/exportImage(3).tiff'
     fn = '/Users/olivierdonze/Documents/TEMP/test_dwnld_swisstopo/Tramelan/extraction/swissalti3d_2m/swissalti3d_2019_2574-1230_2_2056_5728.tif'
-    fn = '/Users/olivierdonze/Downloads/exportImage(9).tiff'
+    fn = '/Users/olivierdonze/Downloads/exportImage(3).tiff'
     print(getCalageFromGeoTif(fn))
 
 
